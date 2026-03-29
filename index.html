@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>BANK - Système de Gestion Financière Pro</title>
+  <!-- Google Fonts & Chart.js -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f5f7fc;
+      --card: #ffffff;
+      --text: #1a2c3e;
+      --text-light: #5b6e8c;
+      --border: #eef2f9;
+      --primary: #1e4a6b;
+      --primary-dark: #0f3b54;
+      --primary-light: #2c7da0;
+      --success: #059669;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.05);
+      --radius: 20px;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* Layout */
+    .app-wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Gauche - Style professionnel */
+    .sidebar {
+      width: 320px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      padding: 24px 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+      z-index: 100;
+      transition: transform 0.25s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.4rem;
+    }
+
+    .logo-text h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .logo-text p {
+      font-size: 0.7rem;
+      color: var(--text-light);
+    }
+
+    /* Navigation */
+    .nav-section {
+      margin-bottom: 28px;
+    }
+
+    .nav-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      padding-left: 12px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      color: var(--text);
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+      margin-bottom: 4px;
+    }
+
+    .nav-item i {
+      width: 24px;
+      color: var(--text-light);
+      font-size: 1.1rem;
+    }
+
+    .nav-item:hover {
+      background: rgba(44, 125, 160, 0.08);
+      color: var(--primary-light);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: 0 6px 14px rgba(30, 74, 107, 0.2);
+    }
+
+    .nav-item.active i {
+      color: white;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 320px;
+      padding: 28px 32px;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .page-title h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .page-title p {
+      color: var(--text-light);
+      font-size: 0.85rem;
+    }
+
+    /* Cards & Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+
+    /* Form Elements */
+    .form-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-light);
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      background: var(--card);
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1);
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      padding: 16px 16px;
+      background: #f8fafd;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--text-light);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+
+    .historique-list {
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .historique-item {
+      background: var(--bg);
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--primary-light);
+    }
+
+    /* Chart container */
+    .chart-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 28px;
+      border: 1px solid var(--border);
+    }
+
+    /* Filter row */
+    .filter-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1000px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .menu-toggle-btn {
+        display: block;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 200;
+        background: var(--primary);
+        color: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 25px;
+        box-shadow: var(--shadow-md);
+        cursor: pointer;
+      }
+    }
+
+    @media (min-width: 1001px) {
+      .menu-toggle-btn {
+        display: none;
+      }
+    }
+
+    .menu-toggle-btn {
+      display: none;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 90;
+      display: none;
+    }
+
+    .overlay.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <button class="menu-toggle-btn" id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+  <div class="overlay" id="overlay"></div>
+
+  <div class="app-wrapper">
+    <!-- Sidebar Left -->
+    <aside class="sidebar" id="sidebar">
+      <div class="logo-area">
+        <div class="logo-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="logo-text">
+          <h2>BANK Pro</h2>
+          <p>Gestion Financière</p>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-title">Tableau de Bord</div>
+        <div class="nav-item active" data-page="dashboard">
+          <i class="fas fa-chart-pie"></i> <span>Dashboard</span>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-title">Opérations</div>
+        <div class="nav-item" data-page="caisse"><i class="fas fa-cash-register"></i> Caisse</div>
+        <div class="nav-item" data-page="transferts"><i class="fas fa-exchange-alt"></i> Transferts</div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-title">Gestion</div>
+        <div class="nav-item" data-page="pret"><i class="fas fa-hand-holding-usd"></i> Gestion de prêt</div>
+        <div class="nav-item" data-page="rapport"><i class="fas fa-file-invoice"></i> Rapport & Comptabilité</div>
+        <div class="nav-item" data-page="parametres"><i class="fas fa-cog"></i> Paramètres</div>
+      </div>
+
+      <div style="margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border); margin-top: 24px;">
+        <div class="nav-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Admin</div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+      <div class="page-header">
+        <div class="page-title">
+          <h1 id="pageTitle">Tableau de Bord</h1>
+          <p id="pageSubtitle">Vue d'ensemble des activités financières</p>
+        </div>
+        <div>
+          <button class="btn btn-outline" id="exportBtn"><i class="fas fa-download"></i> Exporter</button>
+        </div>
+      </div>
+
+      <!-- DASHBOARD SECTION -->
+      <div id="dashboardSection" class="page-section">
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card"><div class="stat-icon" style="background:#e6f7f0; color:#059669;"><i class="fas fa-wallet"></i></div><div class="stat-value" id="totalCapital">0 G</div><div class="stat-label">Capital Total</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#eef2ff; color:#1e4a6b;"><i class="fas fa-arrow-down"></i></div><div class="stat-value" id="totalReceived">0 G</div><div class="stat-label">Total Reçu</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#fff0e6; color:#d97706;"><i class="fas fa-arrow-up"></i></div><div class="stat-value" id="totalSent">0 G</div><div class="stat-label">Total Envoyé</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#ffe6e6; color:#dc2626;"><i class="fas fa-chart-line"></i></div><div class="stat-value" id="totalCommission">0 G</div><div class="stat-label">Commission</div></div>
+        </div>
+        <div class="chart-card">
+          <canvas id="mainChart" style="height:280px; width:100%"></canvas>
+        </div>
+        <div class="form-card">
+          <h3 style="margin-bottom: 16px;">📊 Aperçu par service de transfert</h3>
+          <div id="bankBreakdownDashboard" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:12px;"></div>
+        </div>
+      </div>
+
+      <!-- CAISSE SECTION -->
+      <div id="caisseSection" class="page-section" style="display:none;">
+        <div class="form-card">
+          <h3>🧾 Gestion de Caisse</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Nom du caissière</label><input type="text" id="cashierName" placeholder="Entrez votre nom"></div>
+            <div class="form-group"><label>Banque de transfert</label><select id="bankSelect"><option>Uni-transfer</option><option>Unibank tt kote</option><option>Western Union</option><option>Moneygram</option><option>Cam transfer</option></select></div>
+            <div class="form-group"><label>Devise</label><select id="currencySelect"><option>Gourde</option><option>Dollar</option></select></div>
+            <div class="form-group"><label>Action</label><select id="actionSelect"><option>recevoir</option><option>envoyer</option></select></div>
+            <div class="form-group"><label>Quantité (Montant)</label><input type="number" id="amountInput" placeholder="0.00"></div>
+            <div class="form-group"><label>Commission (optionnel)</label><input type="number" id="commissionInput" value="0" placeholder="0"></div>
+          </div>
+          <button class="btn btn-primary" id="saveTransactionBtn"><i class="fas fa-save"></i> Enregistrer la transaction</button>
+        </div>
+
+        <div class="form-card">
+          <h3>📜 Historique des transactions caisse</h3>
+          <div id="caisseHistory" class="historique-list"></div>
+        </div>
+      </div>
+
+      <!-- TRANSFERTS SECTION (Banques) -->
+      <div id="transfertsSection" class="page-section" style="display:none;">
+        <div class="form-card">
+          <h3>🏦 Opérations par banque</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 20px;" id="banksContainer"></div>
+        </div>
+      </div>
+
+      <!-- GESTION DE PRET -->
+      <div id="pretSection" class="page-section" style="display:none;">
+        <div class="form-card">
+          <h3>➕ Nouvelle demande de prêt</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Nom de l'entreprise</label><input id="loanCompany" placeholder="Entreprise"></div>
+            <div class="form-group"><label>Nom et Prénom</label><input id="loanFullname" placeholder="Nom complet"></div>
+            <div class="form-group"><label>Téléphone</label><input id="loanPhone" placeholder="+509"></div>
+            <div class="form-group"><label>Montant du Prêt (Gourde ou Dollar)</label><input id="loanAmount" placeholder="Montant"></div>
+            <div class="form-group"><label>Durée en mois</label><input id="loanDuration" type="number" placeholder="12"></div>
+            <div class="form-group"><label>Raison du Prêt</label><textarea id="loanReason" rows="2" placeholder="Raison"></textarea></div>
+          </div>
+          <button class="btn btn-primary" id="addLoanBtn"><i class="fas fa-plus"></i> Ajouter Demande</button>
+        </div>
+        <div class="form-card">
+          <h3>📋 Historique des prêts</h3>
+          <div id="loanHistoryList" class="historique-list"></div>
+        </div>
+      </div>
+
+      <!-- RAPPORT & COMPTABILITE -->
+      <div id="rapportSection" class="page-section" style="display:none;">
+        <div class="form-card">
+          <h3>📅 Filtre de période</h3>
+          <div class="filter-row">
+            <div class="form-group"><label>Date début</label><input type="date" id="reportStart"></div>
+            <div class="form-group"><label>Date fin</label><input type="date" id="reportEnd"></div>
+            <button class="btn btn-primary" id="applyFilterBtn">Filtrer</button>
+          </div>
+          <div id="reportSummaryCards" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px;"></div>
+          <h4 style="margin: 20px 0 12px">Détail par banque (Gourde/Dollar - Reçu/Envoyé)</h4>
+          <div id="bankDetailReport"></div>
+        </div>
+        <div class="form-card">
+          <h3>📄 Toutes les transactions</h3>
+          <div class="table-container">
+            <table><thead><tr><th>Date</th><th>Caissier</th><th>Banque</th><th>Devise</th><th>Action</th><th>Montant</th><th>Commission</th></tr></thead><tbody id="allTransactionsTable"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARAMETRES -->
+      <div id="parametresSection" class="page-section" style="display:none;">
+        <div class="form-card">
+          <h3>🔐 Sécurité Admin</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Nouveau mot de passe</label><input type="password" id="newAdminPass" placeholder="********"></div>
+          </div>
+          <button class="btn btn-primary" id="updatePassBtn">Mettre à jour</button>
+          <p id="passMsg" style="margin-top:12px; color:green;"></p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ======================== DATA STORE ========================
+    let transactions = []; // { id, cashier, bank, currency, action, amount, commission, dateTime, date, time }
+    let loans = [];
+    let adminPassword = "admin123";
+
+    // Load/Save
+    function loadData() {
+      const savedTrans = localStorage.getItem('pro_finance_transactions');
+      if(savedTrans) transactions = JSON.parse(savedTrans);
+      const savedLoans = localStorage.getItem('pro_finance_loans');
+      if(savedLoans) loans = JSON.parse(savedLoans);
+      const savedPass = localStorage.getItem('pro_admin_pass');
+      if(savedPass) adminPassword = savedPass;
+    }
+    function saveData() {
+      localStorage.setItem('pro_finance_transactions', JSON.stringify(transactions));
+      localStorage.setItem('pro_finance_loans', JSON.stringify(loans));
+      localStorage.setItem('pro_admin_pass', adminPassword);
+    }
+
+    // Helpers
+    function formatNumber(num) { return num.toLocaleString('fr-FR'); }
+    function getNow() {
+      const d = new Date();
+      const dateStr = d.toLocaleDateString('fr-CA');
+      const timeStr = d.toLocaleTimeString('fr-FR');
+      return { dateStr, timeStr, full: `${dateStr} ${timeStr}` };
+    }
+
+    // Stats & Refresh
+    function getTotals() {
+      let totalReceived = 0, totalSent = 0, totalCommission = 0;
+      transactions.forEach(t => {
+        let amt = parseFloat(t.amount);
+        if(t.action === 'recevoir') totalReceived += amt;
+        else totalSent += amt;
+        totalCommission += parseFloat(t.commission || 0);
+      });
+      return { totalReceived, totalSent, totalCommission, capital: 5000000 + totalReceived - totalSent };
+    }
+
+    function refreshDashboard() {
+      const { totalReceived, totalSent, totalCommission, capital } = getTotals();
+      document.getElementById('totalCapital').innerHTML = formatNumber(capital) + ' G';
+      document.getElementById('totalReceived').innerHTML = formatNumber(totalReceived) + ' G';
+      document.getElementById('totalSent').innerHTML = formatNumber(totalSent) + ' G';
+      document.getElementById('totalCommission').innerHTML = formatNumber(totalCommission) + ' G';
+      // Bank breakdown for dashboard
+      const banks = ['Uni-transfer', 'Unibank tt kote', 'Western Union', 'Moneygram', 'Cam transfer'];
+      let html = '';
+      banks.forEach(bank => {
+        let received = transactions.filter(t => t.bank === bank && t.action === 'recevoir').reduce((s,t)=> s+parseFloat(t.amount),0);
+        let sent = transactions.filter(t => t.bank === bank && t.action === 'envoyer').reduce((s,t)=> s+parseFloat(t.amount),0);
+        html += `<div style="background:var(--bg); padding:12px; border-radius:12px;"><strong>${bank}</strong><br>📥 Reçu: ${formatNumber(received)} G | 📤 Envoyé: ${formatNumber(sent)} G</div>`;
+      });
+      document.getElementById('bankBreakdownDashboard').innerHTML = html;
+      // Chart
+      const ctx = document.getElementById('mainChart').getContext('2d');
+      if(window.myChart) window.myChart.destroy();
+      window.myChart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: ['Reçu', 'Envoyé'], datasets: [{ label: 'Montant (G)', data: [totalReceived, totalSent], backgroundColor: ['#2c7da0', '#e9b35f'], borderRadius: 8 }] },
+        options: { responsive: true, maintainAspectRatio: true }
+      });
+    }
+
+    function refreshCaisseHistory() {
+      const container = document.getElementById('caisseHistory');
+      if(!transactions.length) { container.innerHTML = '<div class="historique-item">Aucune transaction</div>'; return; }
+      let html = '';
+      [...transactions].reverse().forEach(t => {
+        html += `<div class="historique-item"><strong>${t.dateTime}</strong> | ${t.cashier} | ${t.bank} | ${t.currency} | ${t.action} | ${parseFloat(t.amount).toFixed(2)} ${t.currency === 'Gourde' ? 'G' : '$'} | Comm: ${t.commission}</div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function refreshLoanHistory() {
+      const container = document.getElementById('loanHistoryList');
+      if(!loans.length) { container.innerHTML = '<div class="historique-item">Aucune demande de prêt</div>'; return; }
+      let html = '';
+      [...loans].reverse().forEach(l => {
+        html += `<div class="historique-item"><strong>${l.date} ${l.time}</strong><br>${l.company} | ${l.fullname} | ${l.phone}<br>Montant: ${l.amount} | Durée: ${l.duration} mois | Raison: ${l.reason}</div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function refreshRapportTable(startDateFilter = null, endDateFilter = null) {
+      let filtered = [...transactions];
+      if(startDateFilter && endDateFilter) {
+        filtered = transactions.filter(t => t.date >= startDateFilter && t.date <= endDateFilter);
+      }
+      const tbody = document.getElementById('allTransactionsTable');
+      tbody.innerHTML = '';
+      filtered.forEach(t => {
+        let row = `<tr><td>${t.dateTime}</td><td>${t.cashier}</td><td>${t.bank}</td><td>${t.currency}</td><td>${t.action}</td><td>${parseFloat(t.amount).toFixed(2)} ${t.currency === 'Gourde' ? 'G' : '$'}</td><td>${t.commission}</td></tr>`;
+        tbody.innerHTML += row;
+      });
+
+      // Rapport summary + bank detail
+      let totalRec = filtered.filter(t=>t.action==='recevoir').reduce((s,t)=>s+parseFloat(t.amount),0);
+      let totalSend = filtered.filter(t=>t.action==='envoyer').reduce((s,t)=>s+parseFloat(t.amount),0);
+      let totalComm = filtered.reduce((s,t)=>s+parseFloat(t.commission),0);
+      document.getElementById('reportSummaryCards').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${formatNumber(totalRec)} G</div><div class="stat-label">Total Reçu (période)</div></div>
+        <div class="stat-card"><div class="stat-value">${formatNumber(totalSend)} G</div><div class="stat-label">Total Envoyé</div></div>
+        <div class="stat-card"><div class="stat-value">${formatNumber(totalComm)} G</div><div class="stat-label">Commission</div></div>
+      `;
+      const banksUnique = ['Uni-transfer', 'Unibank tt kote', 'Western Union', 'Moneygram', 'Cam transfer'];
+      let bankHtml = '';
+      banksUnique.forEach(b => {
+        let recG = filtered.filter(t=>t.bank===b && t.action==='recevoir' && t.currency==='Gourde').reduce((s,t)=>s+parseFloat(t.amount),0);
+        let sendG = filtered.filter(t=>t.bank===b && t.action==='envoyer' && t.currency==='Gourde').reduce((s,t)=>s+parseFloat(t.amount),0);
+        let recD = filtered.filter(t=>t.bank===b && t.action==='recevoir' && t.currency==='Dollar').reduce((s,t)=>s+parseFloat(t.amount),0);
+        let sendD = filtered.filter(t=>t.bank===b && t.action==='envoyer' && t.currency==='Dollar').reduce((s,t)=>s+parseFloat(t.amount),0);
+        bankHtml += `<div style="background:var(--bg); padding:12px; border-radius:12px; margin-bottom:8px;"><strong>${b}</strong><br>🇭🇹 Gourde : Reçu ${formatNumber(recG)} | Envoyé ${formatNumber(sendG)}<br>🇺🇸 Dollar : Reçu ${formatNumber(recD)} | Envoyé ${formatNumber(sendD)}</div>`;
+      });
+      document.getElementById('bankDetailReport').innerHTML = bankHtml;
+    }
+
+    // Add Transaction (Caisse)
+    function addTransaction() {
+      const cashier = document.getElementById('cashierName').value.trim();
+      if(!cashier) { alert("Nom du caissière requis"); return; }
+      const bank = document.getElementById('bankSelect').value;
+      const currency = document.getElementById('currencySelect').value;
+      const action = document.getElementById('actionSelect').value;
+      const amount = parseFloat(document.getElementById('amountInput').value);
+      if(isNaN(amount) || amount <= 0) { alert("Montant invalide"); return; }
+      const commission = parseFloat(document.getElementById('commissionInput').value) || 0;
+      const { dateStr, timeStr, full } = getNow();
+      const newTrans = { id: Date.now(), cashier, bank, currency, action, amount, commission, dateTime: full, date: dateStr, time: timeStr };
+      transactions.push(newTrans);
+      saveData();
+      refreshDashboard();
+      refreshCaisseHistory();
+      refreshRapportTable();
+      document.getElementById('amountInput').value = '';
+      document.getElementById('commissionInput').value = '0';
+      alert("Transaction enregistrée");
+    }
+
+    // Add Loan
+    function addLoan() {
+      const company = document.getElementById('loanCompany').value.trim();
+      const fullname = document.getElementById('loanFullname').value.trim();
+      const phone = document.getElementById('loanPhone').value.trim();
+      const amount = document.getElementById('loanAmount').value.trim();
+      const duration = document.getElementById('loanDuration').value;
+      const reason = document.getElementById('loanReason').value.trim();
+      if(!company || !fullname || !phone || !amount || !duration) { alert("Tous les champs obligatoires"); return; }
+      const { dateStr, timeStr } = getNow();
+      loans.push({ id: Date.now(), company, fullname, phone, amount, duration, reason, date: dateStr, time: timeStr });
+      saveData();
+      refreshLoanHistory();
+      document.getElementById('loanCompany').value = '';
+      document.getElementById('loanFullname').value = '';
+      document.getElementById('loanPhone').value = '';
+      document.getElementById('loanAmount').value = '';
+      document.getElementById('loanDuration').value = '';
+      document.getElementById('loanReason').value = '';
+      alert("Demande de prêt ajoutée");
+    }
+
+    // Update password
+    function updatePassword() {
+      const newPass = document.getElementById('newAdminPass').value;
+      if(!newPass) { alert("Entrez un mot de passe"); return; }
+      adminPassword = newPass;
+      saveData();
+      document.getElementById('passMsg').innerText = "Mot de passe mis à jour";
+      setTimeout(()=> document.getElementById('passMsg').innerText = "", 2000);
+      document.getElementById('newAdminPass').value = '';
+    }
+
+    // Export CSV
+    function exportCSV() {
+      let csvRows = [["Date","Caissier","Banque","Devise","Action","Montant","Commission"]];
+      transactions.forEach(t => {
+        csvRows.push([t.dateTime, t.cashier, t.bank, t.currency, t.action, t.amount, t.commission]);
+      });
+      const csvContent = csvRows.map(row => row.join(",")).join("\n");
+      const blob = new Blob([csvContent], {type: "text/csv"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = "rapport_transactions.csv"; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Navigation
+    function initNavigation() {
+      const navItems = document.querySelectorAll('.nav-item[data-page]');
+      const sections = ['dashboard', 'caisse', 'transferts', 'pret', 'rapport', 'parametres'];
+      navItems.forEach(item => {
+        item.addEventListener('click', () => {
+          const page = item.getAttribute('data-page');
+          sections.forEach(sec => {
+            const el = document.getElementById(sec + 'Section');
+            if(el) el.style.display = sec === page ? 'block' : 'none';
+          });
+          navItems.forEach(nav => nav.classList.remove('active'));
+          item.classList.add('active');
+          const titles = { dashboard:'Tableau de Bord', caisse:'Caisse - Opérations', transferts:'Transferts par Banque', pret:'Gestion de Prêt', rapport:'Rapport & Comptabilité', parametres:'Paramètres' };
+          document.getElementById('pageTitle').innerText = titles[page];
+          if(page === 'rapport') refreshRapportTable();
+          if(page === 'caisse') refreshCaisseHistory();
+          if(page === 'pret') refreshLoanHistory();
+          if(page === 'dashboard') refreshDashboard();
+        });
+      });
+    }
+
+    // Generate bank cards for transfer section
+    function buildTransferCards() {
+      const banksList = ['Uni-transfer', 'Unibank tt kote', 'Western Union', 'Moneygram', 'Cam transfer'];
+      const container = document.getElementById('banksContainer');
+      let html = '';
+      banksList.forEach(bank => {
+        html += `<div class="form-card"><h4><i class="fas fa-university"></i> ${bank}</h4>
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+          <div style="flex:1"><label>💰 Montant à envoyer</label><input id="send_${bank.replace(/\s/g,'')}" type="number" placeholder="0" class="form-control" style="width:100%;"><button class="btn btn-primary" style="margin-top:8px;" onclick="quickAction('${bank}','envoyer')">Envoyer</button></div>
+          <div style="flex:1"><label>💵 Montant à recevoir</label><input id="rec_${bank.replace(/\s/g,'')}" type="number" placeholder="0" class="form-control" style="width:100%;"><button class="btn btn-success" style="margin-top:8px;" onclick="quickAction('${bank}','recevoir')">Recevoir</button></div>
+        </div></div>`;
+      });
+      container.innerHTML = html;
+    }
+    window.quickAction = (bank, action) => {
+      const cashier = prompt("Nom du caissière pour cette opération:") || "Caissier";
+      const idKey = (action === 'envoyer' ? 'send_' : 'rec_') + bank.replace(/\s/g,'');
+      const amountEl = document.getElementById(idKey);
+      const amount = parseFloat(amountEl?.value);
+      if(isNaN(amount) || amount <=0) { alert("Montant invalide"); return; }
+      const currency = prompt("Devise: Gourde ou Dollar ?", "Gourde");
+      if(!currency || (currency !== 'Gourde' && currency !== 'Dollar')) { alert("Devise non valide"); return; }
+      const commission = parseFloat(prompt("Commission (optionnel)", "0")) || 0;
+      const { dateStr, timeStr, full } = getNow();
+      const newTrans = { id: Date.now(), cashier, bank, currency, action, amount, commission, dateTime: full, date: dateStr, time: timeStr };
+      transactions.push(newTrans);
+      saveData();
+      refreshDashboard();
+      refreshCaisseHistory();
+      alert(`${action === 'envoyer' ? 'Envoi' : 'Réception'} de ${amount} ${currency} via ${bank} effectué`);
+      amountEl.value = '';
+    };
+
+    // Event listeners
+    document.getElementById('saveTransactionBtn')?.addEventListener('click', addTransaction);
+    document.getElementById('addLoanBtn')?.addEventListener('click', addLoan);
+    document.getElementById('updatePassBtn')?.addEventListener('click', updatePassword);
+    document.getElementById('applyFilterBtn')?.addEventListener('click', () => {
+      const start = document.getElementById('reportStart').value;
+      const end = document.getElementById('reportEnd').value;
+      refreshRapportTable(start, end);
+    });
+    document.getElementById('exportBtn')?.addEventListener('click', exportCSV);
+
+    // Mobile menu
+    const menuBtn = document.getElementById('menuToggleBtn');
+    const sidebarEl = document.getElementById('sidebar');
+    const overlayEl = document.getElementById('overlay');
+    if(menuBtn) {
+      menuBtn.addEventListener('click', () => {
+        sidebarEl.classList.toggle('open');
+        overlayEl.classList.toggle('active');
+      });
+      overlayEl.addEventListener('click', () => {
+        sidebarEl.classList.remove('open');
+        overlayEl.classList.remove('active');
+      });
+    }
+
+    // INIT
+    loadData();
+    initNavigation();
+    buildTransferCards();
+    refreshDashboard();
+    refreshCaisseHistory();
+    refreshLoanHistory();
+    refreshRapportTable();
+  </script>
+</body>
+</html>
