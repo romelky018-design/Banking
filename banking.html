@@ -499,6 +499,12 @@
       });
       container.innerHTML=html;
     }
+    function formatNumber(value) {
+    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+    formatNumber("100000,00");   // "100,000,00"
+formatNumber("5000000,50");  // "5,000,000,50"
+formatNumber("12345,67");    // "12,345,67"
     
     // Physical counts history
     function updateDecompteTotal() { const c1=parseFloat(document.getElementById('caisse1').value)||0, c2=parseFloat(document.getElementById('caisse2').value)||0, c3=parseFloat(document.getElementById('caisse3').value)||0, c4=parseFloat(document.getElementById('caisse4').value)||0, c5=parseFloat(document.getElementById('caisse5').value)||0; const total=c1+c2+c3+c4+c5; document.getElementById('totalDecompte').innerHTML=formatNumber(total)+' G'; }
