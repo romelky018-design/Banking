@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Secure Banking Access | Login</title>
+    <!-- Google Fonts for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 (free icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0b2b3b 0%, #1a4f6e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        /* subtle animated background pattern */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        /* main card container */
+        .login-container {
+            width: 100%;
+            max-width: 460px;
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(0px);
+            transition: transform 0.2s ease;
+        }
+
+        .login-container:hover {
+            transform: translateY(-3px);
+        }
+
+        /* header brand area */
+        .brand-header {
+            background: #0f2c39;
+            padding: 1.8rem 2rem 1.5rem;
+            text-align: center;
+            color: white;
+        }
+
+        .brand-icon {
+            font-size: 3.2rem;
+            margin-bottom: 0.5rem;
+            color: #ffd966;
+        }
+
+        .brand-header h1 {
+            font-weight: 700;
+            font-size: 1.9rem;
+            letter-spacing: -0.3px;
+            margin-bottom: 0.25rem;
+        }
+
+        .brand-header p {
+            font-weight: 400;
+            font-size: 0.9rem;
+            opacity: 0.85;
+        }
+
+        /* form body */
+        .form-body {
+            padding: 2rem 2rem 2.2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.6rem;
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            transition: color 0.2s;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.9rem 1rem 0.9rem 2.8rem;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 1.2rem;
+            background-color: #fefefe;
+            transition: all 0.2s;
+            outline: none;
+            color: #1e293b;
+        }
+
+        .input-group input:focus {
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.2);
+        }
+
+        .input-group input:focus + i {
+            color: #2c7da0;
+        }
+
+        /* toggle password eye */
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: #2c7da0;
+        }
+
+        /* login button */
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(95deg, #1f5e7e, #0f3b4f);
+            border: none;
+            padding: 0.9rem;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            border-radius: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-btn i {
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(95deg, #267a9e, #154e66);
+            transform: scale(1.01);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+        }
+
+        .login-btn:hover i {
+            transform: translateX(3px);
+        }
+
+        /* error message styling */
+        .error-message {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 0.7rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 4px solid #b91c1c;
+            animation: shake 0.3s ease-in-out 0s 1;
+        }
+
+        .error-message i {
+            font-size: 1rem;
+        }
+
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .demo-hint {
+            background: #eef2ff;
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            margin-top: 1.8rem;
+            font-size: 0.8rem;
+            text-align: center;
+            color: #1e3a5f;
+            border: 1px solid #cddfe7;
+        }
+
+        .demo-hint strong {
+            font-weight: 700;
+            color: #0f4c5f;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            color: #5b6e8c;
+        }
+
+        /* responsive */
+        @media (max-width: 500px) {
+            .form-body {
+                padding: 1.5rem;
+            }
+            .brand-header {
+                padding: 1.4rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="brand-header">
+        <div class="brand-icon">
+            <i class="fas fa-university"></i>
+        </div>
+        <h1>SecureAccess</h1>
+        <p>ATLANTIC TRANSPORT SERVICE</p>
+    </div>
+    <div class="form-body">
+        <!-- dynamic error area -->
+        <div id="errorDisplay" style="min-height: 68px;"></div>
+
+        <form id="loginForm" action="#" method="post">
+            <div class="input-group">
+                <i class="fas fa-user-circle"></i>
+                <input type="text" id="username" name="username" placeholder="Username" autocomplete="off" value="">
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" name="password" placeholder="Password" autocomplete="off">
+                <button type="button" class="toggle-password" id="togglePwdBtn" aria-label="Show password">
+                    <i class="far fa-eye-slash" id="eyeIcon"></i>
+                </button>
+            </div>
+            <button type="submit" class="login-btn">
+                <span>Sign In</span> <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="demo-hint">
+            <i class="fas fa-shield-alt" style="margin-right: 6px;"></i>
+            <strong>Demo credentials:</strong> Admin / Admin123
+        </div>
+        <div class="footer-note">
+            <i class="fas fa-lock"></i> 256-bit SSL secure connection
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // DOM elements
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const errorContainer = document.getElementById('errorDisplay');
+        const toggleBtn = document.getElementById('togglePwdBtn');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        // ---------- Password visibility toggle ----------
+        function togglePasswordVisibility() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            // toggle eye icon
+            if (type === 'text') {
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            } else {
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            }
+        }
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', togglePasswordVisibility);
+        }
+
+        // ---------- Helper: Show error message with icon ----------
+        function showError(message) {
+            errorContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>${escapeHtml(message)}</span>
+                </div>
+            `;
+            // auto clear after 4 seconds
+            setTimeout(() => {
+                if (errorContainer.firstChild) {
+                    errorContainer.innerHTML = '';
+                }
+            }, 4000);
+        }
+
+        function clearError() {
+            errorContainer.innerHTML = '';
+        }
+
+        // simple escape to avoid injection
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
+        }
+
+        // ---------- Credentials validation ----------
+        // Expected: username = "Admin" (case-sensitive? as requested: "Admin" exact)
+        // password = "Admin123" exact
+        function validateCredentials(username, password) {
+            return (username === "Admin" && password === "Admin123");
+        }
+
+        // ---------- Form submission handler ----------
+        function handleLogin(event) {
+            event.preventDefault();
+
+            // Get raw values and trim whitespace only from username (passwords are sensitive, no trim)
+            const enteredUsername = usernameInput.value;     // keep as is, but check if empty
+            const enteredPassword = passwordInput.value;
+
+            // Basic empty validation
+            if (!enteredUsername || enteredUsername.trim() === "") {
+                showError("Username is required.");
+                usernameInput.focus();
+                return;
+            }
+            if (!enteredPassword) {
+                showError("Password is required.");
+                passwordInput.focus();
+                return;
+            }
+
+            // Since username "Admin" is case-sensitive as per spec (Admin with capital A)
+            // but we also need to ensure no accidental spaces, but we allow exact "Admin"
+            // We'll compare exactly as provided, but for better UX maybe hint about case.
+            const trimmedUser = enteredUsername;  // keep original casing but no extra spaces? Actually spec says Admin
+            // Let's consider if user accidentally added spaces? We'll trim but preserve case: but the spec says "Admin" exact
+            // To be robust: trim leading/trailing spaces but keep internal spaces? Admin doesn't have spaces.
+            const finalUsername = trimmedUser.trim();
+            const finalPassword = enteredPassword;  // no trimming for password
+            
+            if (validateCredentials(finalUsername, finalPassword)) {
+                // CREDENTIALS MATCH -> redirect to banking.html
+                // According to requirement: send to a page name banking.html
+                // We perform a redirect. For demonstration, we create a small safety: 
+                // If banking.html doesn't exist in the same folder, browser will show 404.
+                // To ensure the user experience, we still redirect.
+                // We'll also add a small session storage flag (optional)
+                sessionStorage.setItem('banking_auth', 'true');
+                window.location.href = "banking.html";
+            } else {
+                // Wrong credentials
+                showError("Invalid username or password. Please try again.");
+                // Clear password field for security (optional but good practice)
+                passwordInput.value = "";
+                passwordInput.focus();
+            }
+        }
+
+        // Attach event listener
+        loginForm.addEventListener('submit', handleLogin);
+
+        // Optional: Prefill for demo convenience? Not prefilled to maintain professional look, but we add hint in demo section.
+        // However, you can optionally set for easier testing but it's cleaner without auto-fill. 
+        // But to respect the requirement, it's better to let user type. No prefilled data.
+        // Also add small keyboard enter support is already native.
+        
+        // Additional: if any error occurs while redirect, provide fallback message in console but that's fine.
+        // For the sake of making the login page fully functional, we also ensure that if someone tries to access banking.html directly without login,
+        // they would still be able to because the requirement is only about this login page redirect. 
+        // However, we might add a very basic gate in banking.html? Not part of current task but can be extra.
+        // According to request: create professional login page with given credentials and send to banking.html. 
+        // Done.
+        
+        // Also, remove any potential XSS from error messages.
+        // Focusing on smooth UX
+    })();
+</script>
+</body>
+</html>
