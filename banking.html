@@ -499,8 +499,6 @@
       });
       container.innerHTML=html;
     }
-
-}
     
     // Physical counts history
     function updateDecompteTotal() { const c1=parseFloat(document.getElementById('caisse1').value)||0, c2=parseFloat(document.getElementById('caisse2').value)||0, c3=parseFloat(document.getElementById('caisse3').value)||0, c4=parseFloat(document.getElementById('caisse4').value)||0, c5=parseFloat(document.getElementById('caisse5').value)||0; const total=c1+c2+c3+c4+c5; document.getElementById('totalDecompte').innerHTML=formatNumber(total)+' G'; }
@@ -573,4 +571,4 @@
     loadData(); initNavigation(); refreshDashboard(); refreshCaisseHistory(); refreshLoanHistory(); refreshRapportTable(); updateGrandeCaisseCalculations(); updateDecompteTotal(); refreshGrandeCaisseHistory(); refreshDecompteHistory();
   </script>
 </body>
-</html>
+            </html>
