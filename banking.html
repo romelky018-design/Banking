@@ -100,14 +100,11 @@
     .bank-detail-card { background: var(--bg); padding: 16px; border-radius: 16px; margin-bottom: 12px; }
     .currency-row { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
     .unibank-card { background: linear-gradient(135deg, #e8f0fe, #ffffff); border: 1px solid var(--primary-light); }
-    .search-stats { background: var(--primary-light); color: white; padding: 16px; border-radius: 12px; margin-bottom: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; }
-    .search-stat-card { background: rgba(255,255,255,0.15); padding: 10px; border-radius: 10px; text-align: center; }
-    .search-stat-card .label { font-size: 0.7rem; opacity: 0.9; }
-    .search-stat-card .value { font-size: 1.2rem; font-weight: 700; }
+    .search-stats { background: var(--primary-light); color: white; padding: 16px; border-radius: 12px; margin-bottom: 16px; }
+    .search-stat-line { margin: 5px 0; }
     .sidebar-nav-bottom { margin-top: auto; }
-    .compact-chart { max-height: 280px; }
-    .professional-table th, .professional-table td { padding: 12px 8px; vertical-align: top; }
-    .professional-table { font-size: 0.8rem; }
+    .commission-row { display: flex; gap: 16px; }
+    .commission-row .form-group { flex: 1; }
   </style>
 </head>
 <body>
@@ -115,7 +112,7 @@
   <div class="overlay" id="overlay"></div>
   <div class="app-wrapper">
     <aside class="sidebar" id="sidebar">
-      <div class="logo-area"><div class="logo-icon"><i class="fas fa-chart-line"></i></div><div class="logo-text"><h2>ATS</h2><p>Gestion Financière</p></div></div>
+      <div class="logo-area"><div class="logo-icon"><i class="fas fa-chart-line"></i></div><div class="logo-text"><h2>BANK Pro</h2><p>Gestion Financière</p></div></div>
       <div class="nav-section"><div class="nav-title">Opérations</div><div class="nav-item active" data-page="caisse"><i class="fas fa-cash-register"></i> Caisse</div><div class="nav-item" data-page="recherche"><i class="fas fa-search"></i> Recherche</div></div>
       <div class="nav-section"><div class="nav-title">Gestion</div><div class="nav-item" data-page="pret"><i class="fas fa-hand-holding-usd"></i> Gestion de prêt</div><div class="nav-item" data-page="grandeCaisse"><i class="fas fa-landmark"></i> Grande Caisse</div><div class="nav-item" data-page="rapport"><i class="fas fa-file-invoice"></i> Rapport & Comptabilité</div><div class="nav-item" data-page="parametres"><i class="fas fa-cog"></i> Paramètres</div></div>
       <div class="sidebar-nav-bottom"><div class="nav-section"><div class="nav-title">Tableau de Bord</div><div class="nav-item" data-page="dashboard"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></div></div>
@@ -123,9 +120,9 @@
     </aside>
 
     <main class="main-content" id="mainContent">
-      <div class="page-header"><div class="page-title"><h1 id="pageTitle">Caisse</h1><p id="pageSubtitle">Gestion des opérations de caisse</p></div><div><button class="btn btn-outline" id="exportBtn"><i class="fas fa-download"></i> Exporter CSV</button><button class="btn btn-outline" id="exportLoansOnlyBtn" style="margin-left: 8px;"><i class="fas fa-file-invoice"></i> Exporter Prêts</button></div></div>
+      <div class="page-header"><div class="page-title"><h1 id="pageTitle">Caisse</h1><p id="pageSubtitle">Gestion des opérations de caisse</p></div><div><button class="btn btn-outline" id="exportBtn"><i class="fas fa-download"></i> Exporter CSV</button></div></div>
 
-      <!-- DASHBOARD with cleaner chart like reference -->
+      <!-- DASHBOARD -->
       <div id="dashboardSection" class="page-section" style="display:none;">
         <div class="stats-grid" id="statsGrid">
           <div class="stat-card"><div class="stat-icon" style="background:#e6f7f0; color:#059669;"><i class="fas fa-wallet"></i></div><div class="stat-value" id="totalCapital">0.00 G</div><div class="stat-value" id="totalCapitalUSD" style="font-size:1rem; color:var(--text-light);">0.00 USD</div><div class="stat-label">Capital Total</div></div>
@@ -133,24 +130,21 @@
           <div class="stat-card"><div class="stat-icon" style="background:#fff0e6; color:#d97706;"><i class="fas fa-arrow-up"></i></div><div class="stat-value" id="totalSent">0.00 G</div><div class="stat-value" id="totalSentUSD" style="font-size:1rem; color:var(--text-light);">0.00 USD</div><div class="stat-label">Sorties (Expédiés/Retraits)</div></div>
           <div class="stat-card"><div class="stat-icon" style="background:#ffe6e6; color:#dc2626;"><i class="fas fa-chart-line"></i></div><div class="stat-value" id="totalCommissionG">0.00 G</div><div class="stat-value" id="totalCommissionUSD" style="font-size:1rem; color:var(--text-light);">0.00 USD</div><div class="stat-label">Commission</div></div>
         </div>
-        <div class="chart-card">
-          <canvas id="mainChart" style="height:280px; width:100%"></canvas>
-        </div>
+        <div class="chart-card"><canvas id="mainChart" style="height:280px; width:100%"></canvas></div>
         <div class="form-card"><h3 style="margin-bottom: 16px;">📊 Aperçu par maison de transfert</h3><div id="bankBreakdownDashboard" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap:12px;"></div></div>
       </div>
 
-      <!-- CAISSE with special Unibank interface -->
+      <!-- CAISSE -->
       <div id="caisseSection" class="page-section">
         <div class="form-card">
           <h3>🧾 Gestion de Caisse</h3>
           <div class="form-grid">
-            <div class="form-group"><label>DATE D'ENREGISTREMENT</label><input type="date" id="transactionDate" value="2026-04-09"></div>
+            <div class="form-group"><label>DATE D'ENREGISTREMENT</label><input type="date" id="transactionDate" value="2026-04-12"></div>
             <div class="form-group"><label>Nom du caissier</label><input type="text" id="cashierName" placeholder="Entrez votre nom"></div>
             <div class="form-group"><label>Maison de transfert</label><select id="bankSelect"><option>Uni-transfer</option><option>Unibank tt kote</option><option>Western Union</option><option>Moneygram</option><option>Cam transfer</option></select></div>
           </div>
         </div>
 
-        <!-- Interface standard pour les autres banques -->
         <div id="standardInterface" class="form-card">
           <h3>📝 Opération standard</h3>
           <div class="form-grid">
@@ -158,16 +152,18 @@
             <div class="form-group"><label>Type de transfert</label><select id="actionSelect"><option value="transfert_expedie">Transfert expédié</option><option value="transfert_paye">Transfert payé</option></select></div>
             <div class="form-group"><label>Montant</label><input type="number" id="amountInput" placeholder="0.00"></div>
             <div class="form-group"><label>NOMBRE DE TRANSFERT EFFECTUÉ</label><input type="number" id="quantityInput" placeholder="Nombre" value="1"></div>
-            <div class="form-group"><label>Commission (%)</label><input type="number" id="commissionPercentInput" value="0" placeholder="%"></div>
+          </div>
+          <div class="commission-row">
+            <div class="form-group"><label>Commission (Gourde)</label><input type="number" id="commissionGInput" value="0" placeholder="0.00"></div>
+            <div class="form-group"><label>Commission (USD)</label><input type="number" id="commissionUSDInput" value="0" placeholder="0.00"></div>
           </div>
           <button class="btn btn-primary" id="saveTransactionBtn"><i class="fas fa-save"></i> Enregistrer</button>
         </div>
 
-        <!-- Interface spéciale Unibank tt kote -->
         <div id="unibankInterface" class="form-card unibank-card" style="display:none;">
           <h3>🏦 TRANSACTION DE CAISSE UNIBANK TOUT KOTE</h3>
           <div class="form-grid">
-            <div class="form-group"><label>DATE</label><input type="date" id="unibankDate" value="2026-04-09"></div>
+            <div class="form-group"><label>DATE</label><input type="date" id="unibankDate" value="2026-04-12"></div>
             <div class="form-group"><label>Devise</label><select id="unibankCurrency"><option>Gourde</option><option>USD</option></select></div>
             <div class="form-group"><label>TYPE D'OPÉRATION</label><select id="unibankOperationType">
               <option value="depot">DÉPÔT</option>
@@ -177,8 +173,8 @@
             </select></div>
           </div>
           <div style="background:var(--bg); border-radius:12px; padding:16px; margin:16px 0;">
-            <div class="finance-row"><span class="finance-label">DESCRIPTION OPÉRATIONS</span><span>QT.</span><span>MONTANT</span><span>COMMISSION</span></div>
-            <div class="finance-row"><span class="finance-label" id="selectedOperationLabel">DÉPÔT</span><input type="number" id="unibankQuantity" value="1" style="width:80px; text-align:right;"><input type="number" id="unibankAmount" placeholder="0.00" style="width:120px; text-align:right;"><input type="number" id="unibankCommission" placeholder="0.00" style="width:100px; text-align:right;"></div>
+            <div class="finance-row"><span class="finance-label">DESCRIPTION OPÉRATIONS</span><span>QT.</span><span>MONTANT</span><span>COMMISSION G</span><span>COMMISSION USD</span></div>
+            <div class="finance-row"><span class="finance-label" id="selectedOperationLabel">DÉPÔT</span><input type="number" id="unibankQuantity" value="1" style="width:70px; text-align:right;"><input type="number" id="unibankAmount" placeholder="0.00" style="width:100px; text-align:right;"><input type="number" id="unibankCommissionG" placeholder="0.00" style="width:90px; text-align:right;"><input type="number" id="unibankCommissionUSD" placeholder="0.00" style="width:90px; text-align:right;"></div>
           </div>
           <button class="btn btn-primary" id="saveUnibankTransactionBtn"><i class="fas fa-save"></i> Enregistrer la transaction</button>
         </div>
@@ -193,23 +189,14 @@
         <div class="form-card"><h3>📜 Historique des transactions</h3><div class="date-nav"><button class="btn btn-outline btn-small" id="prevDayCaisse"><i class="fas fa-chevron-left"></i> Jour précédent</button><span id="currentDateDisplay" style="font-weight:600;">Aujourd'hui</span><button class="btn btn-outline btn-small" id="nextDayCaisse">Jour suivant <i class="fas fa-chevron-right"></i></button><button class="btn btn-outline btn-small" id="resetDateCaisse">Aujourd'hui</button></div><div id="caisseHistory" class="historique-list"></div></div>
       </div>
 
-      <!-- RECHERCHE with professional tables and loan payment history -->
+      <!-- RECHERCHE - Simplified with only Payés/Expédiés and Unibank totals -->
       <div id="rechercheSection" class="page-section" style="display:none;">
         <div class="form-card"><h3><i class="fas fa-search"></i> Recherche universelle</h3><div class="form-grid">
           <div class="form-group"><label>Mot-clé</label><input type="text" id="searchKeyword" placeholder="Nom, banque, téléphone..."></div>
           <div class="form-group"><label>Date début</label><input type="date" id="searchStartDate"></div><div class="form-group"><label>Date fin</label><input type="date" id="searchEndDate"></div>
         </div><div style="display: flex; gap: 12px; flex-wrap: wrap;"><button class="btn btn-primary" id="performSearchBtn"><i class="fas fa-search"></i> Rechercher</button><button class="btn btn-outline" id="resetSearchBtn">Réinitialiser</button><button class="btn btn-outline" id="exportSearchResultsBtn"><i class="fas fa-download"></i> Exporter résultats</button></div></div>
         
-        <div class="form-card"><h3>📋 RÉSULTATS DES TRANSACTIONS</h3><div id="searchSummary" style="background:var(--primary-light); color:white; padding:12px; border-radius:12px; margin-bottom:16px; display:none;"></div>
-          <div class="table-container">
-            <table class="professional-table">
-              <thead>
-                <tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Quantité</th><th>Commission (%)</th><th>Commission (Montant)</th></tr>
-              </thead>
-              <tbody id="searchTransactionsResult"></tbody>
-            </table>
-          </div>
-        </div>
+        <div class="form-card"><h3>📋 RÉSULTATS DES TRANSACTIONS</h3><div id="searchSummary" class="search-stats" style="display:none;"></div></div>
         
         <div class="form-card"><h3>💰 RÉSULTATS DES PRÊTS (AVEC HISTORIQUE DES PAIEMENTS)</h3><div id="searchLoansResult" class="historique-list"></div></div>
       </div>
@@ -217,18 +204,18 @@
       <!-- GESTION DE PRÊT -->
       <div id="pretSection" class="page-section" style="display:none;">
         <div class="form-card"><h3>➕ Nouvelle demande de prêt</h3><div class="form-grid">
-          <div class="form-group"><label>DATE D'ENREGISTREMENT</label><input type="date" id="loanDate" value="2026-04-09"></div>
+          <div class="form-group"><label>DATE D'ENREGISTREMENT</label><input type="date" id="loanDate" value="2026-04-12"></div>
           <div class="form-group"><label>Entreprise</label><input id="loanCompany" placeholder="Entreprise"></div>
           <div class="form-group"><label>Nom complet</label><input id="loanFullname" placeholder="Nom complet"></div>
           <div class="form-group"><label>Téléphone</label><input id="loanPhone" placeholder="+509"></div>
           <div class="form-group"><label>Montant total du prêt</label><input id="loanAmount" placeholder="Montant"></div>
           <div class="form-group"><label>Durée (mois)</label><input id="loanDuration" type="number" placeholder="12"></div>
           <div class="form-group"><label>Raison (optionnelle)</label><textarea id="loanReason" rows="2" placeholder="Raison (optionnelle)"></textarea></div>
-        </div><button class="btn btn-primary" id="addLoanBtn"><i class="fas fa-plus"></i> Ajouter Demande</button></div>
+        </div><div style="display: flex; gap: 12px;"><button class="btn btn-primary" id="addLoanBtn"><i class="fas fa-plus"></i> Ajouter Demande</button><button class="btn btn-outline" id="exportLoansOnlyBtn"><i class="fas fa-file-invoice"></i> Exporter Prêts</button></div></div>
         
         <div class="form-card"><h3>💰 Enregistrer un paiement de prêt</h3><div class="form-grid">
           <div class="form-group"><label>Sélectionner le prêt</label><select id="loanSelectForPayment"></select></div>
-          <div class="form-group"><label>DATE DU PAIEMENT</label><input type="date" id="paymentDate" value="2026-04-09"></div>
+          <div class="form-group"><label>DATE DU PAIEMENT</label><input type="date" id="paymentDate" value="2026-04-12"></div>
           <div class="form-group"><label>Montant payé</label><input type="number" id="paymentAmount" placeholder="0.00"></div>
         </div><button class="btn btn-success" id="recordPaymentBtn"><i class="fas fa-money-bill-wave"></i> Enregistrer le paiement</button></div>
 
@@ -240,7 +227,7 @@
         <div class="form-card">
           <h2 style="color: var(--primary-dark); margin-bottom: 8px;">📋 RAPPORT JOURNALIER DES FONDS</h2>
           <div class="form-grid" style="margin-bottom: 24px;">
-            <div class="form-group"><label>DATE / RAPPORT :</label><input type="date" id="reportDateFunds" value="2026-04-09"></div>
+            <div class="form-group"><label>DATE / RAPPORT :</label><input type="date" id="reportDateFunds" value="2026-04-12"></div>
             <div class="form-group"><label>BUREAU :</label><select id="bureauSelect"><option value="Bureau Central">Bureau Central</option><option value="Bureau 4 chemins">Bureau 4 chemins</option></select></div>
           </div>
           <div class="finance-report-grid">
@@ -289,7 +276,7 @@
       <!-- RAPPORT & COMPTABILITÉ -->
       <div id="rapportSection" class="page-section" style="display:none;">
         <div class="form-card"><h3>📅 RAPPORT DE PÉRIODE</h3><div class="filter-row"><div class="form-group"><label>Date début</label><input type="date" id="reportStart"></div><div class="form-group"><label>Date fin</label><input type="date" id="reportEnd"></div><button class="btn btn-primary" id="applyFilterBtn">Filtrer</button><button class="btn btn-outline" id="exportReportBtn">Exporter</button></div><div id="reportSummaryCards" class="summary-stats"></div><h4>📊 Détail par maison</h4><div id="bankDetailReport"></div><h4>💰 Récapitulatif des prêts</h4><div id="loanSummaryReport"></div></div>
-        <div class="form-card"><h3>📄 Détail des transactions</h3><div class="table-container"><table><thead><tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Qté</th><th>Commission</th></tr></thead><tbody id="allTransactionsTable"></tbody></table></div></div>
+        <div class="form-card"><h3>📄 Détail des transactions</h3><div class="table-container"><table><thead><tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Qté</th><th>Commission G</th><th>Commission USD</th></tr></thead><tbody id="allTransactionsTable"></tbody></table></div></div>
       </div>
 
       <!-- PARAMETRES -->
@@ -305,22 +292,22 @@
     let interTransfers = [], physicalCashiers = [];
 
     function loadData() {
-      const savedTrans = localStorage.getItem('pro_finance_transactions_v12'); if(savedTrans) transactions = JSON.parse(savedTrans);
-      const savedLoans = localStorage.getItem('pro_finance_loans_v12'); if(savedLoans) loans = JSON.parse(savedLoans);
-      const savedPayments = localStorage.getItem('pro_loan_payments_v12'); if(savedPayments) loanPayments = JSON.parse(savedPayments);
+      const savedTrans = localStorage.getItem('pro_finance_transactions_v14'); if(savedTrans) transactions = JSON.parse(savedTrans);
+      const savedLoans = localStorage.getItem('pro_finance_loans_v14'); if(savedLoans) loans = JSON.parse(savedLoans);
+      const savedPayments = localStorage.getItem('pro_loan_payments_v14'); if(savedPayments) loanPayments = JSON.parse(savedPayments);
       const savedPass = localStorage.getItem('pro_admin_pass'); if(savedPass) adminPassword = savedPass;
-      const savedReports = localStorage.getItem('pro_daily_funds_reports_v12'); if(savedReports) dailyReports = JSON.parse(savedReports);
-      const savedInter = localStorage.getItem('pro_inter_transfers_v12'); if(savedInter) interTransfers = JSON.parse(savedInter);
-      const savedPhysical = localStorage.getItem('pro_physical_cashiers_v12'); if(savedPhysical) physicalCashiers = JSON.parse(savedPhysical);
+      const savedReports = localStorage.getItem('pro_daily_funds_reports_v14'); if(savedReports) dailyReports = JSON.parse(savedReports);
+      const savedInter = localStorage.getItem('pro_inter_transfers_v14'); if(savedInter) interTransfers = JSON.parse(savedInter);
+      const savedPhysical = localStorage.getItem('pro_physical_cashiers_v14'); if(savedPhysical) physicalCashiers = JSON.parse(savedPhysical);
     }
     function saveData() {
-      localStorage.setItem('pro_finance_transactions_v12', JSON.stringify(transactions));
-      localStorage.setItem('pro_finance_loans_v12', JSON.stringify(loans));
-      localStorage.setItem('pro_loan_payments_v12', JSON.stringify(loanPayments));
+      localStorage.setItem('pro_finance_transactions_v14', JSON.stringify(transactions));
+      localStorage.setItem('pro_finance_loans_v14', JSON.stringify(loans));
+      localStorage.setItem('pro_loan_payments_v14', JSON.stringify(loanPayments));
       localStorage.setItem('pro_admin_pass', adminPassword);
-      localStorage.setItem('pro_daily_funds_reports_v12', JSON.stringify(dailyReports));
-      localStorage.setItem('pro_inter_transfers_v12', JSON.stringify(interTransfers));
-      localStorage.setItem('pro_physical_cashiers_v12', JSON.stringify(physicalCashiers));
+      localStorage.setItem('pro_daily_funds_reports_v14', JSON.stringify(dailyReports));
+      localStorage.setItem('pro_inter_transfers_v14', JSON.stringify(interTransfers));
+      localStorage.setItem('pro_physical_cashiers_v14', JSON.stringify(physicalCashiers));
     }
 
     function getNow() { const d = new Date(); return { dateStr: d.toLocaleDateString('fr-CA'), timeStr: d.toLocaleTimeString('fr-FR'), full: `${d.toLocaleDateString('fr-CA')} ${d.toLocaleTimeString('fr-FR')}` }; }
@@ -336,7 +323,7 @@
     function getTotals() { 
       let totalReceivedG=0, totalSentG=0, totalReceivedUSD=0, totalSentUSD=0, totalCommissionG=0, totalCommissionUSD=0; 
       transactions.forEach(t=>{
-        let amt=parseFloat(t.amount); let commAmt=parseFloat(t.commissionAmount||0);
+        let amt=parseFloat(t.amount); 
         const isEntry = (t.bank === 'Unibank tt kote' && (t.action === 'depot' || t.action === 'ouverture_compte' || t.action === 'souscription')) || (t.bank !== 'Unibank tt kote' && t.action === 'transfert_paye');
         if(isEntry) {
           if(t.currency==='Gourde') totalReceivedG+=amt;
@@ -345,8 +332,8 @@
           if(t.currency==='Gourde') totalSentG+=amt;
           else totalSentUSD+=amt;
         }
-        if(t.currency==='Gourde') totalCommissionG+=commAmt;
-        else totalCommissionUSD+=commAmt;
+        totalCommissionG+=parseFloat(t.commissionG||0);
+        totalCommissionUSD+=parseFloat(t.commissionUSD||0);
       }); 
       return { totalReceivedG, totalSentG, totalReceivedUSD, totalSentUSD, totalCommissionG, totalCommissionUSD, capitalG:0+totalReceivedG-totalSentG, capitalUSD:0+totalReceivedUSD-totalSentUSD };
     }
@@ -415,14 +402,15 @@
       const amount = parseFloat(document.getElementById('unibankAmount').value);
       if(isNaN(amount)||amount<=0){alert("Montant invalide");return;}
       const quantity = parseInt(document.getElementById('unibankQuantity').value)||1;
-      const commissionPercent = parseFloat(document.getElementById('unibankCommission').value)||0;
-      const commissionAmount = (amount * commissionPercent / 100);
+      const commissionG = parseFloat(document.getElementById('unibankCommissionG').value)||0;
+      const commissionUSD = parseFloat(document.getElementById('unibankCommissionUSD').value)||0;
       const transDate = document.getElementById('unibankDate').value;
       const {timeStr,full}=getNow();
-      transactions.push({id:Date.now(),cashier,bank,currency,action:operationType,amount,quantity,commissionPercent,commissionAmount,dateTime:full,date:transDate,time:timeStr});
+      transactions.push({id:Date.now(),cashier,bank,currency,action:operationType,amount,quantity,commissionG,commissionUSD,dateTime:full,date:transDate,time:timeStr});
       saveData(); refreshDashboard(); refreshCaisseHistory(); refreshRapportTable();
       document.getElementById('unibankAmount').value='';
-      document.getElementById('unibankCommission').value='0';
+      document.getElementById('unibankCommissionG').value='0';
+      document.getElementById('unibankCommissionUSD').value='0';
       document.getElementById('unibankQuantity').value='1';
       alert("Transaction Unibank enregistrée");
     }
@@ -432,12 +420,17 @@
       const bank=document.getElementById('bankSelect').value; const currency=document.getElementById('currencySelect').value;
       const action=document.getElementById('actionSelect').value; const amount=parseFloat(document.getElementById('amountInput').value);
       if(isNaN(amount)||amount<=0){alert("Montant invalide");return;}
-      const quantity=parseInt(document.getElementById('quantityInput').value)||1; const commissionPercent=parseFloat(document.getElementById('commissionPercentInput').value)||0;
-      const commissionAmount=(amount*commissionPercent/100); const {dateStr,timeStr,full}=getNow();
+      const quantity=parseInt(document.getElementById('quantityInput').value)||1;
+      const commissionG = parseFloat(document.getElementById('commissionGInput').value)||0;
+      const commissionUSD = parseFloat(document.getElementById('commissionUSDInput').value)||0;
+      const {dateStr,timeStr,full}=getNow();
       const transDate = document.getElementById('transactionDate').value || dateStr;
-      transactions.push({id:Date.now(),cashier,bank,currency,action,amount,quantity,commissionPercent,commissionAmount,dateTime:full,date:transDate,time:timeStr});
+      transactions.push({id:Date.now(),cashier,bank,currency,action,amount,quantity,commissionG,commissionUSD,dateTime:full,date:transDate,time:timeStr});
       saveData(); refreshDashboard(); refreshCaisseHistory(); refreshRapportTable();
-      document.getElementById('amountInput').value=''; document.getElementById('commissionPercentInput').value='0'; document.getElementById('quantityInput').value='1';
+      document.getElementById('amountInput').value=''; 
+      document.getElementById('commissionGInput').value='0';
+      document.getElementById('commissionUSDInput').value='0';
+      document.getElementById('quantityInput').value='1';
       alert("Transaction enregistrée");
     }
 
@@ -464,16 +457,16 @@
       
       const statsDiv = document.getElementById('caisseSearchStats');
       if(filtered.length > 0){
-        statsDiv.style.display = 'grid';
-        statsDiv.innerHTML = `<div class="search-stat-card"><div class="label">📥 TOTAL ENTRÉES</div><div class="value">${formatNumber(receivedG)} G / ${formatNumber(receivedUSD)} USD</div><div class="label">NOMBRE: ${countEntries}</div></div>
-          <div class="search-stat-card"><div class="label">📤 TOTAL SORTIES</div><div class="value">${formatNumber(sentG)} G / ${formatNumber(sentUSD)} USD</div><div class="label">NOMBRE: ${countExits}</div></div>
-          <div class="search-stat-card"><div class="label">💰 TOTAL GÉNÉRAL</div><div class="value">${formatNumber(receivedG+sentG)} G / ${formatNumber(receivedUSD+sentUSD)} USD</div><div class="label">TRANSACTIONS: ${filtered.length}</div></div>`;
+        statsDiv.style.display = 'block';
+        statsDiv.innerHTML = `<div class="search-stat-line"><strong>${filtered.length} transaction(s)</strong></div>
+          <div class="search-stat-line">📥 Payés: ${formatNumber(receivedG)} G / ${formatNumber(receivedUSD)} USD</div>
+          <div class="search-stat-line">📤 Expédiés: ${formatNumber(sentG)} G / ${formatNumber(sentUSD)} USD</div>`;
       } else { statsDiv.style.display = 'none'; }
       
       const container = document.getElementById('caisseHistory');
       if(!filtered.length){container.innerHTML='<div class="historique-item">Aucune transaction</div>';return;}
       let html = '';
-      filtered.forEach(t=>{html+=`<div class="historique-item"><strong>${t.dateTime}</strong> | ${t.cashier} | ${t.bank} | ${t.currency} | ${getActionLabel(t)} | ${formatNumber(t.amount)} | Nb:${t.quantity} | Comm:${t.commissionPercent}%</div>`;});
+      filtered.forEach(t=>{html+=`<div class="historique-item"><strong>${t.dateTime}</strong> | ${t.cashier} | ${t.bank} | ${t.currency} | ${getActionLabel(t)} | ${formatNumber(t.amount)} | Nb:${t.quantity} | Comm G:${formatNumber(t.commissionG||0)} | Comm USD:${formatNumber(t.commissionUSD||0)}</div>`;});
       container.innerHTML=html;
     }
 
@@ -483,7 +476,7 @@
       document.getElementById('currentDateDisplay').innerText = currentCaisseDate; 
       if(!filtered.length){container.innerHTML='<div class="historique-item">Aucune transaction</div>';return;} 
       let html = ''; 
-      filtered.forEach(t=>{html+=`<div class="historique-item"><strong>${t.dateTime}</strong> | ${t.cashier} | ${t.bank} | ${t.currency} | ${getActionLabel(t)} | ${formatNumber(t.amount)} | Nb:${t.quantity} | Comm:${t.commissionPercent}%</div>`;}); 
+      filtered.forEach(t=>{html+=`<div class="historique-item"><strong>${t.dateTime}</strong> | ${t.cashier} | ${t.bank} | ${t.currency} | ${getActionLabel(t)} | ${formatNumber(t.amount)} | Nb:${t.quantity} | Comm G:${formatNumber(t.commissionG||0)} | Comm USD:${formatNumber(t.commissionUSD||0)}</div>`;}); 
       container.innerHTML=html;
       document.getElementById('caisseSearchStats').style.display = 'none';
     }
@@ -545,7 +538,7 @@
       let filtered=[...transactions]; let filteredLoans=[...loans];
       if(start&&end){ filtered=transactions.filter(t=>t.date>=start&&t.date<=end); filteredLoans=loans.filter(l=>l.date>=start&&l.date<=end);}
       const tbody=document.getElementById('allTransactionsTable'); tbody.innerHTML='';
-      filtered.forEach(t=>{tbody.innerHTML+=`<tr><td>${t.dateTime}</td><td>${t.cashier}</td><td>${t.bank}</td><td>${t.currency}</td><td>${getActionLabel(t)}</td><td>${formatNumber(t.amount)} ${t.currency==='Gourde'?'G':'USD'}</td><td>${t.quantity}</td><td>${t.commissionPercent}%</td>`;});
+      filtered.forEach(t=>{tbody.innerHTML+=`<tr><td>${t.dateTime}</td><td>${t.cashier}</td><td>${t.bank}</td><td>${t.currency}</td><td>${getActionLabel(t)}</td><td>${formatNumber(t.amount)} ${t.currency==='Gourde'?'G':'USD'}</td><td>${t.quantity}</td><td>${formatNumber(t.commissionG||0)} G</td><td>${formatNumber(t.commissionUSD||0)} USD</td></tr>`;});
       let totalRecG=0, totalSendG=0, totalRecD=0, totalSendD=0;
       filtered.forEach(t=>{
         const isEntry = (t.bank === 'Unibank tt kote' && (t.action === 'depot' || t.action === 'ouverture_compte' || t.action === 'souscription')) || (t.bank !== 'Unibank tt kote' && t.action === 'transfert_paye');
@@ -585,22 +578,63 @@
       document.getElementById('loanSummaryReport').innerHTML=`<div class="bank-detail-card"><strong>Résumé des prêts</strong><br>Total: ${formatNumber(loansTotal)} G | Remboursé: ${formatNumber(loansPaid)} G | Restant: ${formatNumber(loansTotal-loansPaid)} G</div>`;
     }
 
+    // Updated performSearch for Recherche section - only Payés/Expédiés totals and Unibank specific
     function performSearch(){ 
       const kw=document.getElementById('searchKeyword').value.toLowerCase(); const sd=document.getElementById('searchStartDate').value; const ed=document.getElementById('searchEndDate').value; 
       let ft=transactions, fl=loans; 
       if(sd){ft=ft.filter(t=>t.date>=sd); fl=fl.filter(l=>l.date>=sd);} if(ed){ft=ft.filter(t=>t.date<=ed); fl=fl.filter(l=>l.date<=ed);} 
       if(kw){ft=ft.filter(t=>Object.values(t).some(v=>String(v).toLowerCase().includes(kw))); fl=fl.filter(l=>Object.values(l).some(v=>String(v).toLowerCase().includes(kw)));} 
-      const totalMontantG = ft.filter(t=>t.currency==='Gourde').reduce((s,t)=>s+parseFloat(t.amount),0);
-      const totalMontantUSD = ft.filter(t=>t.currency==='USD').reduce((s,t)=>s+parseFloat(t.amount),0);
-      const summaryDiv = document.getElementById('searchSummary');
-      if(ft.length > 0){ summaryDiv.style.display = 'block'; summaryDiv.innerHTML = `<strong>Résumé:</strong> ${ft.length} transaction(s) | Total: ${formatNumber(totalMontantG)} G / ${formatNumber(totalMontantUSD)} USD`; } 
-      else { summaryDiv.style.display = 'none'; }
-      const tbody=document.getElementById('searchTransactionsResult'); tbody.innerHTML=''; 
+      
+      const totalTransactions = ft.length;
+      const totalQuantity = ft.reduce((sum, t) => sum + (parseInt(t.quantity) || 0), 0);
+      
+      // Totals for all banks (Payés/Expédiés)
+      let totalPayesG=0, totalPayesUSD=0, totalExpediesG=0, totalExpediesUSD=0;
       ft.forEach(t=>{
-        const commissionAmount = (parseFloat(t.amount) * parseFloat(t.commissionPercent) / 100);
-        tbody.innerHTML+=`<tr><td>${t.dateTime}</td><td>${t.cashier}</td><td>${t.bank}</td><td>${t.currency}</td><td>${getActionLabel(t)}</td><td>${formatNumber(t.amount)} ${t.currency==='Gourde'?'G':'USD'}</td><td>${t.quantity}</td><td>${t.commissionPercent}%</td><td>${formatNumber(commissionAmount)} ${t.currency==='Gourde'?'G':'USD'}</td></tr>`;
+        if(t.bank !== 'Unibank tt kote'){
+          if(t.action === 'transfert_paye'){
+            if(t.currency==='Gourde') totalPayesG+=parseFloat(t.amount);
+            else totalPayesUSD+=parseFloat(t.amount);
+          } else if(t.action === 'transfert_expedie'){
+            if(t.currency==='Gourde') totalExpediesG+=parseFloat(t.amount);
+            else totalExpediesUSD+=parseFloat(t.amount);
+          }
+        }
       });
-      if(ft.length===0) tbody.innerHTML='<tr><td colspan="9" style="text-align:center">Aucune transaction trouvée</td></tr>';
+      
+      // Unibank specific totals
+      let unibankRetraitsG=0, unibankRetraitsUSD=0, unibankRetraitsQty=0;
+      let unibankDepotsG=0, unibankDepotsUSD=0, unibankDepotsQty=0;
+      ft.filter(t=>t.bank === 'Unibank tt kote').forEach(t=>{
+        if(t.action === 'retrait'){
+          if(t.currency==='Gourde') unibankRetraitsG+=parseFloat(t.amount);
+          else unibankRetraitsUSD+=parseFloat(t.amount);
+          unibankRetraitsQty += parseInt(t.quantity||0);
+        } else if(t.action === 'depot' || t.action === 'ouverture_compte' || t.action === 'souscription'){
+          if(t.currency==='Gourde') unibankDepotsG+=parseFloat(t.amount);
+          else unibankDepotsUSD+=parseFloat(t.amount);
+          unibankDepotsQty += parseInt(t.quantity||0);
+        }
+      });
+      
+      const summaryDiv = document.getElementById('searchSummary');
+      if(ft.length > 0){ 
+        summaryDiv.style.display = 'block';
+        let summaryHtml = `<strong>${totalTransactions} transaction(s) | Nbre total transfert: ${totalQuantity}</strong><br>
+        📥 Payés: ${formatNumber(totalPayesG)} G / ${formatNumber(totalPayesUSD)} USD<br>
+        📤 Expédiés: ${formatNumber(totalExpediesG)} G / ${formatNumber(totalExpediesUSD)} USD`;
+        
+        if(unibankRetraitsQty > 0 || unibankDepotsQty > 0){
+          summaryHtml += `<hr style="margin: 8px 0; border-color: rgba(255,255,255,0.3);">
+          <strong>🏦 Unibank tt kote:</strong><br>
+          📤 Retraits: ${unibankRetraitsQty} / ${formatNumber(unibankRetraitsG)} G / ${formatNumber(unibankRetraitsUSD)} USD<br>
+          📥 Dépôts: ${unibankDepotsQty} / ${formatNumber(unibankDepotsG)} G / ${formatNumber(unibankDepotsUSD)} USD`;
+        }
+        summaryDiv.innerHTML = summaryHtml;
+      } else { 
+        summaryDiv.style.display = 'none'; 
+      }
+      
       const lc=document.getElementById('searchLoansResult'); 
       if(fl.length===0) lc.innerHTML='<div class="historique-item">Aucun prêt trouvé</div>'; 
       else{let lh=''; fl.forEach(l=>{const payments=loanPayments.filter(p=>p.loanId===l.id); const totalPaid=payments.reduce((s,p)=>s+parseFloat(p.amount),0); let payHtml=''; if(payments.length>0){payHtml='<div style="margin-top:8px;"><small><strong>Historique des paiements:</strong></small>'; payments.forEach(p=>{payHtml+=`<div class="payment-item">📅 ${p.paymentDate} - ${formatNumber(p.amount)} G</div>`;}); payHtml+='</div>';} lh+=`<div class="historique-item ${totalPaid >= parseFloat(l.amount) ? 'paid' : ''}"><strong>${l.date} ${l.time}</strong><br>🏢 ${l.company} | 👤 ${l.fullname} | 📞 ${l.phone}<br>💰 Montant total: ${formatNumber(l.amount)} G | Durée: ${l.duration} mois | Raison: ${l.reason}<br>💵 Montant remboursé: ${formatNumber(totalPaid)} G | Reste à payer: ${formatNumber(parseFloat(l.amount)-totalPaid)} G${payHtml}</div>`;}); lc.innerHTML=lh;}
@@ -608,7 +642,7 @@
     
     function exportLoansOnly(){ let rows=[["Date","Entreprise","Nom","Téléphone","Montant","Durée","Payé","Reste"]]; loans.forEach(l=>{const paid=loanPayments.filter(p=>p.loanId===l.id).reduce((s,p)=>s+parseFloat(p.amount),0); rows.push([l.date,l.company,l.fullname,l.phone,formatNumber(l.amount),l.duration,formatNumber(paid),formatNumber(l.amount-paid)]);}); const blob=new Blob([rows.map(r=>r.join(",")).join("\n")],{type:"text/csv"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="pret_export.csv"; a.click(); URL.revokeObjectURL(a.href);}
     function updatePassword(){ const np=document.getElementById('newAdminPass').value; if(np){ adminPassword=np; saveData(); document.getElementById('passMsg').innerText="Mot de passe mis à jour"; setTimeout(()=>document.getElementById('passMsg').innerText="",2000); document.getElementById('newAdminPass').value='';} else alert("Entrez mot de passe");}
-    function exportReport(){ let rows=[["Date","Type","Maison/Caissier","Montant","Devise","Commission"]]; transactions.forEach(t=>{rows.push([t.dateTime,getActionLabel(t),t.bank+" - "+t.cashier,formatNumber(t.amount),t.currency,t.commissionPercent+"%"]);}); const blob=new Blob([rows.map(r=>r.join(",")).join("\n")],{type:"text/csv"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="rapport_comptabilite.csv"; a.click(); URL.revokeObjectURL(a.href);}
+    function exportReport(){ let rows=[["Date","Type","Maison/Caissier","Montant","Devise","Commission G","Commission USD"]]; transactions.forEach(t=>{rows.push([t.dateTime,getActionLabel(t),t.bank+" - "+t.cashier,formatNumber(t.amount),t.currency,formatNumber(t.commissionG||0),formatNumber(t.commissionUSD||0)]);}); const blob=new Blob([rows.map(r=>r.join(",")).join("\n")],{type:"text/csv"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="rapport_comptabilite.csv"; a.click(); URL.revokeObjectURL(a.href);}
 
     // Grande Caisse functions (simplified)
     function renderInterTransfers() { let container=document.getElementById('interTransfersContainer'); if(!container) return; let html=''; interTransfers.forEach((t,idx)=>{html+=`<div class="inter-transfer-row"><input type="text" placeholder="Caissier" value="${t.caissier||''}" onchange="updateInterTransfer(${idx},'caissier',this.value)"><input type="number" placeholder="Montant" value="${t.montant||0}" onchange="updateInterTransfer(${idx},'montant',parseFloat(this.value)||0)"><input type="date" value="${t.date||''}" onchange="updateInterTransfer(${idx},'date',this.value)"><button class="btn btn-danger btn-small" onclick="removeInterTransfer(${idx})">X</button></div>`;}); container.innerHTML=html; updateGrandeCaisseCalculations(); }
@@ -652,7 +686,7 @@
     document.getElementById('recordPaymentBtn')?.addEventListener('click', recordPayment);
     document.getElementById('updatePassBtn')?.addEventListener('click', updatePassword);
     document.getElementById('applyFilterBtn')?.addEventListener('click', () => { const s=document.getElementById('reportStart').value, e=document.getElementById('reportEnd').value; refreshRapportTable(s,e); });
-    document.getElementById('exportBtn')?.addEventListener('click', () => { let csv=[["Date","Caissier","Maison","Devise","Type","Montant","Qté","Commission"]]; transactions.forEach(t=>{csv.push([t.dateTime,t.cashier,t.bank,t.currency,getActionLabel(t),formatNumber(t.amount),t.quantity,t.commissionPercent+"%"]);}); const blob=new Blob([csv.map(r=>r.join(",")).join("\n")],{type:"text/csv"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="transactions.csv"; a.click(); URL.revokeObjectURL(a.href); });
+    document.getElementById('exportBtn')?.addEventListener('click', () => { let csv=[["Date","Caissier","Maison","Devise","Type","Montant","Qté","Commission G","Commission USD"]]; transactions.forEach(t=>{csv.push([t.dateTime,t.cashier,t.bank,t.currency,getActionLabel(t),formatNumber(t.amount),t.quantity,formatNumber(t.commissionG||0),formatNumber(t.commissionUSD||0)]);}); const blob=new Blob([csv.map(r=>r.join(",")).join("\n")],{type:"text/csv"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="transactions.csv"; a.click(); URL.revokeObjectURL(a.href); });
     document.getElementById('exportLoansOnlyBtn')?.addEventListener('click', exportLoansOnly);
     document.getElementById('performSearchBtn')?.addEventListener('click', performSearch);
     document.getElementById('resetSearchBtn')?.addEventListener('click', () => { document.getElementById('searchKeyword').value=''; document.getElementById('searchStartDate').value=''; document.getElementById('searchEndDate').value=''; performSearch(); });
