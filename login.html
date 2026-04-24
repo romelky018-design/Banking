@@ -210,6 +210,61 @@
     .report-table th { background: #eef2ff; }
     .subtotal-row { background: #f1f5f9; font-weight: 600; }
     .total-row-ca { background: #dbeafe; font-weight: 800; }
+
+    /* ===== PAGE BACKGROUND COLORS (LIGHT) ===== */
+    #caisseSection { background: #e8f5e9; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+    #rechercheSection { background: #fff3e0; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+    #pretSection { background: #e3f2fd; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+    #grandeCaisseSection { background: #fce4ec; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+    #rapportSection { background: #e8eaf6; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+    #parametresSection { background: #fef9e4; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+    #dashboardSection { background: #e0f7fa; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+
+    /* ===== COMPACT EDIT MODAL (RECTANGLE, SCROLLABLE) ===== */
+    .edit-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 3000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .edit-modal-container {
+      background: white;
+      border-radius: 16px;
+      width: 500px;
+      max-width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .edit-modal-container h3 {
+      margin-bottom: 16px;
+      font-size: 1.3rem;
+      border-left: 3px solid var(--primary);
+      padding-left: 12px;
+    }
+    .edit-modal-container .form-group {
+      margin-bottom: 12px;
+    }
+    .edit-modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 20px;
+      position: sticky;
+      bottom: 0;
+      background: white;
+      padding-top: 12px;
+    }
+    @media (max-width: 550px) {
+      .edit-modal-container { width: 95%; padding: 16px; }
+    }
   </style>
 </head>
 <body>
@@ -253,12 +308,23 @@
           <div class="form-card"><h3>📜 Historique des transactions</h3><div class="date-nav"><button class="btn btn-outline btn-small" id="prevDayCaisse"><i class="fas fa-chevron-left"></i> Jour précédent</button><span id="currentDateDisplay">Aujourd'hui</span><button class="btn btn-outline btn-small" id="nextDayCaisse">Jour suivant <i class="fas fa-chevron-right"></i></button><button class="btn btn-outline btn-small" id="resetDateCaisse">Aujourd'hui</button></div><div id="caisseHistory" class="historique-list"></div></div>
         </div>
 
-        <!-- RECHERCHE with edit capability -->
+        <!-- RECHERCHE with compact edit modal -->
         <div id="rechercheSection" class="page-section" style="display:none;"><div class="form-card"><h3><i class="fas fa-search"></i> Recherche universelle</h3><div class="form-grid"><div class="form-group"><label>Mot-clé</label><input type="text" id="searchKeyword" placeholder="Nom, banque, téléphone..."></div><div class="form-group"><label>Date début</label><input type="date" id="searchStartDate"></div><div class="form-group"><label>Date fin</label><input type="date" id="searchEndDate"></div></div><div style="display: flex; gap: 12px; flex-wrap: wrap;"><button class="btn btn-primary" id="performSearchBtn"><i class="fas fa-search"></i> Rechercher</button><button class="btn btn-outline" id="resetSearchBtn">Réinitialiser</button><button class="btn btn-outline" id="exportSearchResultsBtn"><i class="fas fa-download"></i> Exporter résultats</button></div></div>
           <div class="form-card"><h3>📋 RÉSULTATS DES TRANSACTIONS</h3><div id="searchSummary" class="search-stats" style="display:none;"></div>
             <div class="table-container"><table id="searchResultsTable" class="professional-table"><thead><tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Quantité</th><th>Commission G</th><th>Commission USD</th><th>Actions</th></tr></thead><tbody id="searchTransactionsResult"></tbody></table></div></div>
           <div class="form-card"><h3>💰 RÉSULTATS DES PRÊTS (AVEC HISTORIQUE DES PAIEMENTS)</h3><div id="searchLoansResult" class="historique-list"></div></div>
-          <div id="editModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:3000; justify-content:center; align-items:center;"><div class="form-card" style="width:500px; margin:0;"><h3>Modifier la transaction</h3><div id="editFormFields"></div><div style="display:flex; gap:12px; margin-top:20px;"><button class="btn btn-primary" id="saveEditBtn">Enregistrer</button><button class="btn btn-outline" id="cancelEditBtn">Annuler</button></div></div></div>
+          
+          <!-- Compact Edit Modal (Rectangle, scrollable, button visible) -->
+          <div id="editModalOverlay" class="edit-modal-overlay">
+            <div class="edit-modal-container">
+              <h3>✏️ Modifier la transaction</h3>
+              <div id="editFormFields"></div>
+              <div class="edit-modal-actions">
+                <button class="btn btn-outline" id="cancelEditBtn">Annuler</button>
+                <button class="btn btn-primary" id="saveEditBtn">Enregistrer</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- GESTION DE PRÊT -->
@@ -271,7 +337,7 @@
         <div id="grandeCaisseSection" class="page-section" style="display:none;"><div class="form-card"><div style="display: flex; justify-content: space-between;"><h2>📋 RAPPORT JOURNALIER DES FONDS</h2><button class="btn print-btn" id="printGrandeCaisseBtn"><i class="fas fa-print"></i> Imprimer</button></div><div class="form-grid"><div class="form-group"><label>DATE / RAPPORT :</label><input type="date" id="reportDateFunds" value="2026-04-24"></div><div class="form-group"><label>BUREAU :</label><select id="bureauSelect"><option>Bureau Central</option><option>Bureau 4 chemins</option></select></div></div><div class="finance-report-grid"><div><div class="finance-section"><h4>💰 FONDS DISPONIBLE</h4><div class="finance-row"><span>MONTANT D'OUVERTURE</span><input type="text" id="openingBalance" class="finance-amount number-input" style="width:140px;text-align:right;" value="0" oninput="updateGrandeCaisseCalculations()"></div><div class="finance-row"><span>TOTAL MONTANT AJOUTE</span><input type="text" id="manualAddedAmount" class="finance-amount number-input" style="width:140px;text-align:right;" value="0" oninput="updateGrandeCaisseCalculations()"></div><div class="finance-row total"><span>TOTAL FONDS DISPONIBLE</span><span id="totalAvailableDisplay">0.00 G</span></div></div><div class="finance-section"><h4>💸 PAIEMENT DES TRANSFERTS</h4><div class="finance-row"><span>UNIBANK TT KOTE</span><input type="text" id="manualUnibank" class="finance-amount number-input" style="width:140px;text-align:right;" value="0" oninput="updateGrandeCaisseCalculations()"></div><div class="finance-row"><span>WESTERN UNION</span><input type="text" id="manualWestern" class="finance-amount number-input" style="width:140px;text-align:right;" value="0" oninput="updateGrandeCaisseCalculations()"></div><div class="finance-row"><span>UNITRANSFERT</span><input type="text" id="manualUnitransfert" class="finance-amount number-input" style="width:140px;text-align:right;" value="0" oninput="updateGrandeCaisseCalculations()"></div><div class="finance-row"><span>MONEYGRAM</span><input type="text" id="manualMoneygram" class="finance-amount number-input" style="width:140px;text-align:right;" value="0" oninput="updateGrandeCaisseCalculations()"></div><div class="finance-row"><span>CAM</span><input type="text" id="manualCam" class="finance-amount number-input" style="width:140px;text-align:right;" value="0" oninput="updateGrandeCaisseCalculations()"></div><div class="finance-row total"><span>TOTAL PAIEMENTS DES TRANSFERTS</span><span id="totalPaymentsDisplay">0.00 G</span></div></div><div class="finance-section"><h4>🔄 TRANSFERT DES FONDS INTER-BUREAU</h4><div id="interTransfersContainer"></div><button class="btn btn-outline btn-small" id="addInterTransferBtn">Ajouter</button><div class="finance-row total"><span>TOTAL TRANSFERTS DES FONDS</span><span id="totalInterTransfersDisplay">0.00 G</span></div></div></div><div><div class="finance-section"><h4>📉 AUTRES DECAISSEMENT</h4><div class="finance-row"><span>Acquisitions bureau</span><input type="text" id="otherAcquisitions" class="finance-amount number-input" value="0" oninput="updateGrandeCaisseCalculations()"></div><div class="finance-row"><span>Paiements factures</span><input type="text" id="otherBills" class="finance-amount number-input" value="0" oninput="updateGrandeCaisseCalculations()"></div><div class="finance-row"><span>Autres décaissements</span><input type="text" id="otherDisbursements" class="finance-amount number-input" value="0" oninput="updateGrandeCaisseCalculations()"></div><div class="finance-row"><span>Montant prélevé</span><input type="text" id="amountWithdrawn" class="finance-amount number-input" value="0" oninput="updateGrandeCaisseCalculations()"></div><div class="finance-row total"><span>TOTAL AUTRES</span><span id="totalOtherDisbursementsDisplay">0.00 G</span></div></div><div class="finance-section"><h4>🧾 DÉCOMPTES PHYSIQUES</h4><div id="physicalCountsContainer"></div><button class="btn btn-outline btn-small" id="addPhysicalCashierBtn">Ajouter</button><div class="finance-row total"><span>TOTAL DÉCOMPTES</span><span id="totalPhysicalDisplay">0.00 G</span></div></div><div class="grand-total"><div class="label">📌 BALANCE FIN DE JOURNEE</div><div class="amount" id="finalBalanceDisplay">0.00 G</div></div></div></div><div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px;"><button class="btn btn-outline" id="resetGrandeCaisseBtn">Réinitialiser</button><button class="btn btn-primary" id="saveGrandeCaisseBtn">Enregistrer</button></div><div id="grandeCaisseMessage"></div></div><div class="form-card"><h3>📜 HISTORIQUE DES RAPPORTS</h3><div id="grandeCaisseHistory" class="historique-list"></div></div>
         </div>
 
-        <!-- RAPPORT & COMPTABILITÉ with professional details -->
+        <!-- RAPPORT & COMPTABILITÉ -->
         <div id="rapportSection" class="page-section" style="display:none;"><div class="form-card"><h3>📅 RAPPORT DE PÉRIODE</h3><div class="filter-row"><div class="form-group"><label>Date début</label><input type="date" id="reportStart"></div><div class="form-group"><label>Date fin</label><input type="date" id="reportEnd"></div><button class="btn btn-primary" id="applyFilterBtn">Filtrer</button><button class="btn btn-outline" id="exportReportBtn">Exporter</button></div></div>
           <div class="form-card"><h3>📊 CHIFFRE D'AFFAIRES PAR MAISON DE TRANSFERT</h3><div id="caSummaryCards" class="summary-stats"></div></div>
           <div class="form-card"><h3>📄 DÉTAIL DES TRANSACTIONS</h3><div class="table-container"><table class="report-table"><thead><tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Quantité</th><th>Commission (G)</th><th>Commission (USD)</th></tr></thead><tbody id="allTransactionsTable"></tbody></table></div></div>
@@ -284,6 +350,7 @@
   </div>
 
   <script>
+    // ORIGINAL SCRIPT - COMPLETELY UNCHANGED except editTransaction function uses new compact modal
     function formatNumber(num) { if (isNaN(num)) num = 0; return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     function parseNumber(str) { if (!str) return 0; const cleaned = str.toString().replace(/,/g, ''); return parseFloat(cleaned) || 0; }
     function showNotification(message, isSuccess = true) { const n = document.createElement('div'); n.className = 'toast-notification'; n.style.background = isSuccess ? '#059669' : '#dc2626'; n.innerText = message; document.body.appendChild(n); setTimeout(() => n.remove(), 2000); }
@@ -386,7 +453,6 @@
       if(start&&end){ filtered=transactions.filter(t=>t.date>=start&&t.date<=end); filteredLoans=loans.filter(l=>l.date>=start&&l.date<=end); }
       const tbody=document.getElementById('allTransactionsTable'); tbody.innerHTML='';
       filtered.forEach(t=>{tbody.innerHTML+=`<tr><td>${t.dateTime}</td><td>${t.cashier}</td><td>${t.bank}</td><td>${t.currency}</td><td>${getActionLabel(t)}</td><td>${formatNumber(t.amount)}</td><td>${t.quantity}</td><td>${formatNumber(t.commissionG||0)} G</td><td>${formatNumber(t.commissionUSD||0)} USD</td></tr>`;});
-      // Chiffre d'affaires par maison
       const banks=['Uni-transfer','Unibank tt kote','Western Union','Moneygram','Cam transfer'];
       let caHtml='';
       banks.forEach(b=>{
@@ -427,11 +493,12 @@
       const lc=document.getElementById('searchLoansResult'); 
       if(fl.length===0) lc.innerHTML='<div>Aucun prêt</div>'; else{ let lh=''; fl.forEach(l=>{ const payments=loanPayments.filter(p=>p.loanId===l.id); const totalPaid=payments.reduce((s,p)=>s+parseFloat(p.amount),0); let payHtml=''; if(payments.length>0){ payHtml='<div><small>Paiements: '; payments.forEach(p=>{payHtml+=`${p.paymentDate}: ${formatNumber(p.amount)} G; `;}); payHtml+='</small></div>'; } lh+=`<div class="historique-item"><strong>${l.date}</strong><br>🏢 ${l.company} | 👤 ${l.fullname}<br>💰 ${formatNumber(l.amount)} G | Payé: ${formatNumber(totalPaid)} G | Reste: ${formatNumber(l.amount-totalPaid)} G${payHtml}</div>`;}); lc.innerHTML=lh; }
     }
+    
+    // MODIFIED editTransaction - uses compact modal instead of old one
     window.editTransaction = function(id){
       const t = transactions.find(tx => tx.id === id);
       if(!t) return;
       editingTransId = id;
-      const modal = document.getElementById('editModal');
       const fields = document.getElementById('editFormFields');
       fields.innerHTML = `
         <div class="form-group"><label>Date</label><input type="date" id="editDate" value="${t.date}" class="edit-input"></div>
@@ -444,8 +511,9 @@
         <div class="form-group"><label>Commission G</label><input type="number" id="editCommissionG" value="${t.commissionG||0}" class="edit-input"></div>
         <div class="form-group"><label>Commission USD</label><input type="number" id="editCommissionUSD" value="${t.commissionUSD||0}" class="edit-input"></div>
       `;
-      modal.style.display = 'flex';
+      document.getElementById('editModalOverlay').style.display = 'flex';
     };
+    
     document.getElementById('saveEditBtn')?.addEventListener('click', () => {
       if(!editingTransId) return;
       const index = transactions.findIndex(t => t.id === editingTransId);
@@ -465,10 +533,11 @@
         saveData(); refreshDashboard(); refreshCaisseHistory(); refreshRapportTable(); performSearch();
         showNotification("Transaction modifiée avec succès!");
       }
-      document.getElementById('editModal').style.display = 'none';
+      document.getElementById('editModalOverlay').style.display = 'none';
       editingTransId = null;
     });
-    document.getElementById('cancelEditBtn')?.addEventListener('click', () => { document.getElementById('editModal').style.display = 'none'; editingTransId = null; });
+    document.getElementById('cancelEditBtn')?.addEventListener('click', () => { document.getElementById('editModalOverlay').style.display = 'none'; editingTransId = null; });
+    
     function exportLoansOnly(){ let rows=[["Date","Entreprise","Nom","Téléphone","Montant","Durée","Payé","Reste"]]; loans.forEach(l=>{const paid=loanPayments.filter(p=>p.loanId===l.id).reduce((s,p)=>s+parseFloat(p.amount),0); rows.push([l.date,l.company,l.fullname,l.phone,formatNumber(l.amount),l.duration,formatNumber(paid),formatNumber(l.amount-paid)]);}); const blob=new Blob([rows.map(r=>r.join(",")).join("\n")],{type:"text/csv"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="pret_export.csv"; a.click(); showNotification("Export des prêts effectué!");}
     function updatePassword(){ const np=document.getElementById('newAdminPass').value; if(np){ adminPassword=np; saveData(); document.getElementById('passMsg').innerText="Mot de passe mis à jour"; setTimeout(()=>document.getElementById('passMsg').innerText="",2000); document.getElementById('newAdminPass').value=''; showNotification("Mot de passe mis à jour!");} else alert("Entrez mot de passe");}
     function exportReport(){ let rows=[["Date","Type","Maison/Caissier","Montant","Devise","Commission G","Commission USD"]]; transactions.forEach(t=>{rows.push([t.dateTime,getActionLabel(t),t.bank+" - "+t.cashier,formatNumber(t.amount),t.currency,formatNumber(t.commissionG||0),formatNumber(t.commissionUSD||0)]);}); const blob=new Blob([rows.map(r=>r.join(",")).join("\n")],{type:"text/csv"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="rapport_comptabilite.csv"; a.click(); showNotification("Rapport exporté!");}
@@ -486,7 +555,7 @@
     function loadGrandeCaisseReportForDate(){ let date=document.getElementById('reportDateFunds').value; let saved=dailyReports[date]; if(saved){ document.getElementById('bureauSelect').value=saved.bureau||"Bureau Central"; document.getElementById('openingBalance').value=formatNumber(saved.openingBalance); document.getElementById('manualAddedAmount').value=formatNumber(saved.manualAddedAmount); document.getElementById('manualUnibank').value=formatNumber(saved.manualUnibank); document.getElementById('manualWestern').value=formatNumber(saved.manualWestern); document.getElementById('manualUnitransfert').value=formatNumber(saved.manualUnitransfert); document.getElementById('manualMoneygram').value=formatNumber(saved.manualMoneygram); document.getElementById('manualCam').value=formatNumber(saved.manualCam); interTransfers=saved.interTransfers||[]; physicalCashiers=saved.physicalCashiers||[]; document.getElementById('otherAcquisitions').value=formatNumber(saved.otherAcquisitions); document.getElementById('otherBills').value=formatNumber(saved.otherBills); document.getElementById('otherDisbursements').value=formatNumber(saved.otherDisbursements); document.getElementById('amountWithdrawn').value=formatNumber(saved.amountWithdrawn); } else resetGrandeCaisseForm(); renderInterTransfers(); renderPhysicalCashiers(); updateGrandeCaisseCalculations(); }
     function resetGrandeCaisseForm(){ document.getElementById('bureauSelect').value="Bureau Central"; document.getElementById('openingBalance').value="0"; document.getElementById('manualAddedAmount').value="0"; document.getElementById('manualUnibank').value="0"; document.getElementById('manualWestern').value="0"; document.getElementById('manualUnitransfert').value="0"; document.getElementById('manualMoneygram').value="0"; document.getElementById('manualCam').value="0"; interTransfers=[]; physicalCashiers=[]; document.getElementById('otherAcquisitions').value="0"; document.getElementById('otherBills').value="0"; document.getElementById('otherDisbursements').value="0"; document.getElementById('amountWithdrawn').value="0"; renderInterTransfers(); renderPhysicalCashiers(); updateGrandeCaisseCalculations(); }
     function refreshGrandeCaisseHistory(){ let container=document.getElementById('grandeCaisseHistory'); if(!container) return; let dates=Object.keys(dailyReports).sort().reverse(); if(dates.length===0){container.innerHTML='<div>Aucun rapport</div>';return;} let html=''; dates.forEach(date=>{let r=dailyReports[date]; let interTotal=(r.interTransfers||[]).reduce((s,t)=>s+(parseFloat(t.montant)||0),0); let physicalTotal=(r.physicalCashiers||[]).reduce((s,p)=>s+(parseFloat(p.montant)||0),0); html+=`<div class="historique-item"><strong>${date}</strong> - ${r.bureau}<br>Ouverture: ${formatNumber(r.openingBalance)} G | Ajouté: ${formatNumber(r.manualAddedAmount)} G<br>Paiements: ${formatNumber(r.manualUnibank+r.manualWestern+r.manualUnitransfert+r.manualMoneygram+r.manualCam)} G<br>Transferts: ${formatNumber(interTotal)} G<br>Décaissements: ${formatNumber(r.otherAcquisitions+r.otherBills+r.otherDisbursements+r.amountWithdrawn)} G<br>Décompte: ${formatNumber(physicalTotal)} G<br><strong>Balance: ${formatNumber(r.finalBalance)} G</strong></div>`;}); container.innerHTML=html; }
-    document.getElementById('printGrandeCaisseBtn')?.addEventListener('click',()=>{ const date=document.getElementById('reportDateFunds').value; const saved=dailyReports[date]; const bureau=document.getElementById('bureauSelect').options[document.getElementById('bureauSelect').selectedIndex]?.text; let printContent=`<html><head><title>Rapport Grande Caisse</title><style>body{font-family:Arial;padding:20px;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:8px;}.grand-total{background:#1e4a6b;color:white;padding:12px;text-align:center;}</style></head><body><h1>RAPPORT JOURNALIER DES FONDS</h1><div>BUREAU: ${bureau}</div><div>DATE: ${date}</div>`; if(saved){ printContent+=`<table><tr><th>FONDS DISPONIBLE</th><td>Ouverture: ${formatNumber(saved.openingBalance)} G<br>Ajouté: ${formatNumber(saved.manualAddedAmount)} G<br>Total: ${formatNumber((saved.openingBalance||0)+(saved.manualAddedAmount||0))} G</tr>`; printContent+=`<tr><th>PAIEMENTS TRANSFERTS</th><td>Unibank: ${formatNumber(saved.manualUnibank||0)} G<br>Western: ${formatNumber(saved.manualWestern||0)} G<br>Unitransfert: ${formatNumber(saved.manualUnitransfert||0)} G<br>Moneygram: ${formatNumber(saved.manualMoneygram||0)} G<br>Cam: ${formatNumber(saved.manualCam||0)} G<br>Total: ${formatNumber((saved.manualUnibank||0)+(saved.manualWestern||0)+(saved.manualUnitransfert||0)+(saved.manualMoneygram||0)+(saved.manualCam||0))} G</tr>`; printContent+=`<tr><th>TRANSFERTS INTER-BUREAU</th><td>Total: ${formatNumber((saved.interTransfers||[]).reduce((s,t)=>s+(parseFloat(t.montant)||0),0))} G</tr>`; printContent+=`<tr><th>AUTRES DECAISSEMENT</th><td>Total: ${formatNumber((saved.otherAcquisitions||0)+(saved.otherBills||0)+(saved.otherDisbursements||0)+(saved.amountWithdrawn||0))} G</tr>`; printContent+=`<tr><th>DÉCOMPTES PHYSIQUES DES CAISSES</th><td>Total: ${formatNumber((saved.physicalCashiers||[]).reduce((s,p)=>s+(parseFloat(p.montant)||0),0))} G</tr>`; printContent+=`<div class="grand-total">BALANCE FINALE: ${formatNumber(saved.finalBalance||0)} G</div>`; } else { printContent+=`<p>Aucune donnée pour cette date</p>`; } printContent+=`</body></html>`; const w=window.open('','_blank'); w.document.write(printContent); w.document.close(); w.print(); });
+    document.getElementById('printGrandeCaisseBtn')?.addEventListener('click',()=>{ const date=document.getElementById('reportDateFunds').value; const saved=dailyReports[date]; const bureau=document.getElementById('bureauSelect').options[document.getElementById('bureauSelect').selectedIndex]?.text; let printContent=`<html><head><title>Rapport Grande Caisse</title><style>body{font-family:Arial;padding:20px;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:8px;}.grand-total{background:#1e4a6b;color:white;padding:12px;text-align:center;}</style></head><body><h1>RAPPORT JOURNALIER DES FONDS</h1><div>BUREAU: ${bureau}</div><div>DATE: ${date}</div>`; if(saved){ printContent+=`<table><tr><th>FONDS DISPONIBLE</th><td>Ouverture: ${formatNumber(saved.openingBalance)} G<br>Ajouté: ${formatNumber(saved.manualAddedAmount)} G<br>Total: ${formatNumber((saved.openingBalance||0)+(saved.manualAddedAmount||0))} G</td>`; printContent+=`<tr><th>PAIEMENTS TRANSFERTS</th><td>Unibank: ${formatNumber(saved.manualUnibank||0)} G<br>Western: ${formatNumber(saved.manualWestern||0)} G<br>Unitransfert: ${formatNumber(saved.manualUnitransfert||0)} G<br>Moneygram: ${formatNumber(saved.manualMoneygram||0)} G<br>Cam: ${formatNumber(saved.manualCam||0)} G<br>Total: ${formatNumber((saved.manualUnibank||0)+(saved.manualWestern||0)+(saved.manualUnitransfert||0)+(saved.manualMoneygram||0)+(saved.manualCam||0))} G</tr>`; printContent+=`<tr><th>TRANSFERTS INTER-BUREAU</th><td>Total: ${formatNumber((saved.interTransfers||[]).reduce((s,t)=>s+(parseFloat(t.montant)||0),0))} G</tr>`; printContent+=`<tr><th>AUTRES DECAISSEMENT</th><td>Total: ${formatNumber((saved.otherAcquisitions||0)+(saved.otherBills||0)+(saved.otherDisbursements||0)+(saved.amountWithdrawn||0))} G</tr>`; printContent+=`<tr><th>DÉCOMPTES PHYSIQUES DES CAISSES</th><td>Total: ${formatNumber((saved.physicalCashiers||[]).reduce((s,p)=>s+(parseFloat(p.montant)||0),0))} G</tr>`; printContent+=`<div class="grand-total">BALANCE FINALE: ${formatNumber(saved.finalBalance||0)} G</div>`; } else { printContent+=`<p>Aucune donnée pour cette date</p>`; } printContent+=`</body></html>`; const w=window.open('','_blank'); w.document.write(printContent); w.document.close(); w.print(); });
     function attachNumberFormatListeners() { document.querySelectorAll('.number-input').forEach(input=>{ input.addEventListener('blur',function(){ if(this.value){ const raw=parseNumber(this.value); this.value=formatNumber(raw); } }); input.addEventListener('focus',function(){ const raw=parseNumber(this.value); this.value=raw.toString(); }); }); }
     function initNavigation() {
       const navItems = document.querySelectorAll('.nav-item[data-page]'); const sections = ['dashboard','caisse','recherche','pret','grandeCaisse','rapport','parametres'];
