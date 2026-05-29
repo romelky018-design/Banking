@@ -221,10 +221,6 @@
       .sidebar, .menu-toggle-btn, .overlay, .page-header button, .btn, .date-nav, .action-buttons-row, .edit-modal-overlay { display: none !important; }
       .main-content { margin: 0; padding: 0; }
       .form-card, .creditor-card, .table-container { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
-      /* Hide time elements in print */
-      .historique-item strong, .report-table td:first-child, .search-stats div {
-        /* ensure only date appears */
-      }
     }
   </style>
 </head>
@@ -267,14 +263,14 @@
           <div class="form-card"><h3>📜 Historique des transactions</h3><div class="date-nav"><button class="btn btn-outline btn-small" id="prevDayCaisse"><i class="fas fa-chevron-left"></i> Jour précédent</button><span id="currentDateDisplay">Aujourd'hui</span><button class="btn btn-outline btn-small" id="nextDayCaisse">Jour suivant <i class="fas fa-chevron-right"></i></button><button class="btn btn-outline btn-small" id="resetDateCaisse">Aujourd'hui</button></div><div id="caisseHistory" class="historique-list"></div></div>
         </div>
 
-        <!-- RECHERCHE -->
+        <!-- RECHERCHE (corrigée : plus de caractère } parasite) -->
         <div id="rechercheSection" class="page-section" style="display:none;">
           <div class="form-card"><h3><i class="fas fa-search"></i> Recherche universelle</h3><div class="form-grid"><div class="form-group"><label>Mot-clé</label><input type="text" id="searchKeyword" placeholder="Nom, banque, téléphone..."></div><div class="form-group"><label>Date début</label><input type="date" id="searchStartDate" value=""></div><div class="form-group"><label>Date fin</label><input type="date" id="searchEndDate" value=""></div><div class="form-group"><label>BUREAU</label><select id="searchBureauFilter"><option value="">Tous</option><option value="Bureau central">Bureau central</option><option value="Bureau 4 chemins">Bureau 4 chemins</option></select></div></div><div style="display: flex; gap: 12px; flex-wrap: wrap;"><button class="btn btn-primary" id="performSearchBtn"><i class="fas fa-search"></i> Rechercher</button><button class="btn btn-outline" id="resetSearchBtn">Réinitialiser</button><button class="btn btn-outline" id="exportSearchResultsBtn"><i class="fas fa-download"></i> Exporter résultats</button></div></div>
           <div class="form-card"><h3>📋 RÉSULTATS DES TRANSACTIONS</h3><div id="searchSummary" class="search-stats" style="display:none;"></div><div class="table-container"><table id="searchResultsTable"><thead><tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Quantité</th><th>Commission G</th><th>Commission USD</th><th>Bureau</th><th>Actions</th></tr></thead><tbody id="searchTransactionsResult"></tbody></table></div></div>
           <div id="editModal" class="edit-modal-overlay"><div class="edit-modal-container"><h3>✏️ Modifier la transaction</h3><div id="editFormFields"></div><div class="edit-modal-actions"><button class="btn btn-outline" id="cancelEditBtn">Annuler</button><button class="btn btn-primary" id="saveEditBtn">Enregistrer</button></div></div></div>
         </div>
 
-        <!-- GESTION DE PRÊT -->
+        <!-- GESTION DE PRÊT (complète) -->
         <div id="pretSection" class="page-section" style="display:none;">
           <div class="form-card"><h3>📝 Enregistrement (Créancier)</h3><div class="form-grid"><div class="form-group"><label>Date d'enregistrement</label><input type="date" id="creditorDate" value=""></div><div class="form-group"><label>Nom (Entreprise)</label><input id="creditorCompany" placeholder="Nom de l'entreprise"></div><div class="form-group"><label>Nom Propriétaire</label><input id="creditorOwner" placeholder="Nom complet"></div><div class="form-group"><label>Code</label><input id="creditorCode" placeholder="Code unique"></div><div class="form-group"><label>Téléphone</label><input id="creditorPhone" placeholder="+509"></div><div class="form-group"><label>Adresse (optionnel)</label><input id="creditorAddress" placeholder="Adresse"></div></div><button class="btn btn-primary" id="saveCreditorBtn">Enregistrer</button></div>
           <div class="form-card"><h3>💰 Enregistrer un prêt</h3><div class="form-grid"><div class="form-group"><label>Sélectionner un créancier</label><select id="loanCreditorSelect"></select></div><div class="form-group"><label>Date du prêt</label><input type="date" id="loanDate"></div><div class="form-group"><label>Montant du Prêt</label><input type="text" id="loanAmountNew" placeholder="0.00" class="number-input" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"></div><div class="form-group"><label>Devise</label><select id="loanCurrency"><option value="HTG">HTG (Gourde)</option><option value="USD">USD</option></select></div><div class="form-group"><label>Raison (optionnel)</label><textarea id="loanReasonNew" rows="2" placeholder="Raison"></textarea></div></div><button class="btn btn-success" id="saveLoanBtn">Enregistrer</button></div>
@@ -285,22 +281,49 @@
         <!-- GRANDE CAISSE -->
         <div id="grandeCaisseSection" class="page-section" style="display:none;">
           <div class="form-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;"><h2>📋 RAPPORT JOURNALIER DES FONDS</h2><div style="display:flex; gap:12px;"><div class="form-group" style="margin:0; min-width:120px;"><label style="font-size:0.7rem;">DEVISE</label><select id="grandeCaisseCurrency" style="padding:8px 12px;"><option value="Gourde">🇭🇹 Gourde (G)</option><option value="USD">🇺🇸 Dollar (USD)</option></select></div><button class="btn print-btn" id="printGrandeCaisseBtn"><i class="fas fa-print"></i> Imprimer</button></div></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <h2>📋 RAPPORT JOURNALIER DES FONDS</h2>
+              <div style="display:flex; gap:12px;">
+                <div class="form-group" style="margin:0; min-width:120px;"><label style="font-size:0.7rem;">DEVISE</label><select id="grandeCaisseCurrency" style="padding:8px 12px;"><option value="Gourde">🇭🇹 Gourde (G)</option><option value="USD">🇺🇸 Dollar (USD)</option></select></div>
+                <button class="btn print-btn" id="printGrandeCaisseBtn"><i class="fas fa-print"></i> Imprimer</button>
+              </div>
+            </div>
             <div class="form-grid"><div class="form-group"><label>DATE / RAPPORT :</label><input type="date" id="reportDateFunds" value=""></div><div class="form-group"><label>BUREAU :</label><select id="bureauSelect"><option>Bureau Central</option><option>Bureau 4 chemins</option></select></div></div>
             <div class="finance-report-grid">
-              <div><div class="finance-section"><h4>💰 FONDS DISPONIBLE</h4><div id="availableFundsContainer"></div><button class="btn btn-outline btn-small" id="addAvailableFundBtn">Ajouter</button><div class="finance-row total"><span>TOTAL FONDS DISPONIBLE</span><span id="totalAvailableDisplay">0.00 G</span></div></div>
-              <div class="finance-section"><h4>💸 PAIEMENT DES TRANSFERTS</h4><div class="finance-row"><span>UNIBANK TT KOTE</span><input type="text" id="manualUnibank" class="finance-amount number-input" placeholder="0.00" value="0" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatGrandeCaisseInput(this)"></div><div class="finance-row"><span>WESTERN UNION</span><input type="text" id="manualWestern" class="finance-amount number-input" placeholder="0.00" value="0" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatGrandeCaisseInput(this)"></div><div class="finance-row"><span>UNITRANSFERT</span><input type="text" id="manualUnitransfert" class="finance-amount number-input" placeholder="0.00" value="0" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatGrandeCaisseInput(this)"></div><div class="finance-row"><span>MONEYGRAM</span><input type="text" id="manualMoneygram" class="finance-amount number-input" placeholder="0.00" value="0" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatGrandeCaisseInput(this)"></div><div class="finance-row"><span>CAM</span><input type="text" id="manualCam" class="finance-amount number-input" placeholder="0.00" value="0" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatGrandeCaisseInput(this)"></div><div class="finance-row total"><span>TOTAL PAIEMENTS DES TRANSFERTS</span><span id="totalPaymentsDisplay">0.00 G</span></div></div>
-              <div class="finance-section"><h4>🔄 TRANSFERT DES FONDS INTER-BUREAU</h4><div id="interTransfersContainer"></div><button class="btn btn-outline btn-small" id="addInterTransferBtn">Ajouter</button><div class="finance-row total"><span>TOTAL TRANSFERTS DES FONDS</span><span id="totalInterTransfersDisplay">0.00 G</span></div></div></div>
-              <div><div class="finance-section"><h4>📉 AUTRES DECAISSEMENT</h4><div class="finance-row"><span>Acquisitions bureau</span><input type="text" id="otherAcquisitions" class="finance-amount number-input" placeholder="0.00" value="0" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatGrandeCaisseInput(this)"></div><div class="finance-row"><span>Paiements factures</span><input type="text" id="otherBills" class="finance-amount number-input" placeholder="0.00" value="0" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatGrandeCaisseInput(this)"></div><div class="finance-row"><span>Autres décaissements</span><input type="text" id="otherDisbursements" class="finance-amount number-input" placeholder="0.00" value="0" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatGrandeCaisseInput(this)"></div><div class="finance-row"><span>Montant prélevé</span><input type="text" id="amountWithdrawn" class="finance-amount number-input" placeholder="0.00" value="0" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatGrandeCaisseInput(this)"></div><div class="finance-row total"><span>TOTAL AUTRES</span><span id="totalOtherDisbursementsDisplay">0.00 G</span></div></div>
-              <div class="finance-section"><h4>🧾 DÉCOMPTES PHYSIQUES</h4><div id="physicalCountsContainer"></div><button class="btn btn-outline btn-small" id="addPhysicalCashierBtn">Ajouter</button><div class="finance-row total"><span>TOTAL DÉCOMPTES</span><span id="totalPhysicalDisplay">0.00 G</span></div></div>
-              <div class="grand-total"><div class="label">📌 BALANCE FIN DE JOURNEE</div><div class="amount" id="finalBalanceDisplay">0.00 G</div></div></div>
+              <div>
+                <div class="finance-section"><h4>💰 FONDS DISPONIBLE</h4><div class="finance-row"><span>Montant Disponible debut/Journée</span><input type="text" id="openingBalance" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                  <div class="finance-section" style="margin-top:10px;"><h4>➕ Montants Ajoutés</h4><div id="addedFundsContainer"></div><button class="btn btn-outline btn-small" id="addAddedFundBtn">Ajouter</button><div class="finance-row total" style="margin-top:10px;"><span>TOTAL MONTANTS AJOUTES</span><span id="totalAddedDisplay">0.00 G</span></div></div>
+                  <div class="finance-row total"><span>FONDS DISPONIBLES/JOURNEE</span><span id="totalAvailableDisplay">0.00 G</span></div>
+                </div>
+                <div class="finance-section"><h4>💸 PAIEMENT TRANSFER</h4><div class="finance-row"><span>Unibank tt kote</span><input type="text" id="manualUnibank" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                  <div class="finance-row"><span>Western Union</span><input type="text" id="manualWestern" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                  <div class="finance-row"><span>Unitransfert</span><input type="text" id="manualUnitransfert" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                  <div class="finance-row"><span>Moneygram</span><input type="text" id="manualMoneygram" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                  <div class="finance-row"><span>Cam</span><input type="text" id="manualCam" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                  <div class="finance-row total"><span>TOTAL PAIEMENT TRANSFER</span><span id="totalPaymentsDisplay">0.00 G</span></div>
+                </div>
+                <div class="finance-section"><h4>🔄 TRANSFERT DE FONDS</h4><div id="interTransfersContainer"></div><button class="btn btn-outline btn-small" id="addInterTransferBtn">Ajouter</button><div class="finance-row total"><span>TOTAL TRANSFERT DE FONDS</span><span id="totalInterTransfersDisplay">0.00 G</span></div></div>
+                <div class="finance-section"><h4>📉 AUTRES DECAISSEMENTS</h4><div class="finance-row"><span>Acquisitions bureau</span><input type="text" id="otherAcquisitions" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                  <div class="finance-row"><span>Paiements factures</span><input type="text" id="otherBills" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                  <div class="finance-row"><span>Autres décaissements</span><input type="text" id="otherDisbursements" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                  <div class="finance-row"><span>Montant prélevé</span><input type="text" id="amountWithdrawn" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                  <div class="finance-row total"><span>TOTAL AUTRES DECAISSEMENTS</span><span id="totalOtherDisbursementsDisplay">0.00 G</span></div>
+                </div>
+              </div>
+              <div>
+                <div class="finance-section"><h4>🧾 DÉCOMPTES PHYSIQUES</h4><div id="physicalCountsContainer"></div><button class="btn btn-outline btn-small" id="addPhysicalCashierBtn">Ajouter</button><div class="finance-row total"><span>TOTAL DÉCOMPTES</span><span id="totalPhysicalDisplay">0.00 G</span></div></div>
+                <div class="finance-section"><h4>📊 SYNTHÈSE</h4><div class="finance-row"><span>TOTAL - SORTIE DE FONDS</span><span id="totalOutflowDisplay">0.00 G</span></div>
+                  <div class="finance-row total"><span>BALANCE DE FERMETURE</span><span id="finalBalanceDisplay">0.00 G</span></div>
+                  <div class="finance-row" style="font-size:0.75rem; margin-top:10px;"><em>FONDS DISPONIBLES = TOTAL SORTIE DE FONDS + BALANCE DE FERMETURE</em></div>
+                </div>
+              </div>
             </div>
             <div style="display: flex; gap:16px; justify-content:flex-end; margin-top:24px;"><button class="btn btn-outline" id="resetGrandeCaisseBtn">Réinitialiser</button><button class="btn btn-primary" id="saveGrandeCaisseBtn">Enregistrer</button></div>
           </div>
-          <div class="form-card"><h3>📜 HISTORIQUE DES RAPPORTS</h3><div id="grandeCaisseHistory" class="historique-list"></div></div>
+          <div class="form-card"><h3>📜 HISTORIQUE DES RAPPORTS DE FONDS DE LA JOURNEE</h3><div id="grandeCaisseHistory" class="historique-list"></div></div>
         </div>
 
-        <!-- RAPPORT & COMPTABILITÉ -->
+        <!-- RAPPORT & COMPTABILITÉ (corrigé : plus de } parasite) -->
         <div id="rapportSection" class="page-section" style="display:none;">
           <div class="form-card"><h3>📅 RAPPORT DE PÉRIODE</h3><div class="filter-row"><div class="form-group"><label>Date début</label><input type="date" id="reportStart" value=""></div><div class="form-group"><label>Date fin</label><input type="date" id="reportEnd" value=""></div><button class="btn btn-primary" id="applyFilterBtn">Filtrer</button><button class="btn btn-outline" id="exportReportBtn">Exporter</button></div></div>
           <div class="form-card"><h3>📄 DÉTAIL DES TRANSACTIONS</h3><div class="table-container"><table class="report-table"><thead><tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Quantité</th><th>Commission (G)</th><th>Commission (USD)</th><th>Bureau</th></tr></thead><tbody id="allTransactionsTable"></tbody></table></div></div>
@@ -337,7 +360,7 @@
     // ==================== DONNÉES PRINCIPALES ====================
     let transactions = [], creditors = [], creditorLoans = [], creditorPayments = [], dailyReports = {};
     let currentCaisseDate = getTodayDate();
-    let interTransfers = [], physicalCashiers = [], availableFunds = [];
+    let interTransfers = [], physicalCashiers = [], addedFunds = [];
     let currentUser = null, editingTransId = null;
     let adminPassword = "admin123", caissePassword = "caisse123";
     let grandeCaisseCurrentCurrency = "Gourde";
@@ -351,7 +374,7 @@
     function updateNavigationAccess() { ['navRecherche','navPret','navRapport','navParametres'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display = hasAccess(id.replace('nav','').toLowerCase()) ? 'flex' : 'none'; }); }
     
     function saveAllData() {
-      const fullData = { transactions, creditors, creditorLoans, creditorPayments, dailyReports, interTransfers, physicalCashiers, availableFunds, adminPassword, caissePassword };
+      const fullData = { transactions, creditors, creditorLoans, creditorPayments, dailyReports, interTransfers, physicalCashiers, addedFunds, adminPassword, caissePassword };
       localStorage.setItem('pro_all_data', JSON.stringify(fullData));
       localStorage.setItem('pro_finance_transactions_main', JSON.stringify(transactions));
       localStorage.setItem('pro_creditors', JSON.stringify(creditors));
@@ -360,7 +383,7 @@
       localStorage.setItem('pro_daily_funds_reports_main', JSON.stringify(dailyReports));
       localStorage.setItem('pro_inter_transfers_main', JSON.stringify(interTransfers));
       localStorage.setItem('pro_physical_cashiers_main', JSON.stringify(physicalCashiers));
-      localStorage.setItem('pro_available_funds', JSON.stringify(availableFunds));
+      localStorage.setItem('pro_added_funds', JSON.stringify(addedFunds));
       savePasswords();
     }
     
@@ -376,7 +399,7 @@
           dailyReports = data.dailyReports || {};
           interTransfers = data.interTransfers || [];
           physicalCashiers = data.physicalCashiers || [];
-          availableFunds = data.availableFunds || [];
+          addedFunds = data.addedFunds || [];
           if(data.adminPassword) adminPassword = data.adminPassword;
           if(data.caissePassword) caissePassword = data.caissePassword;
           saveAllData();
@@ -389,7 +412,7 @@
         const sr = localStorage.getItem('pro_daily_funds_reports_main'); if(sr) dailyReports = JSON.parse(sr);
         const si = localStorage.getItem('pro_inter_transfers_main'); if(si) interTransfers = JSON.parse(si);
         const sphy = localStorage.getItem('pro_physical_cashiers_main'); if(sphy) physicalCashiers = JSON.parse(sphy);
-        const saf = localStorage.getItem('pro_available_funds'); if(saf) availableFunds = JSON.parse(saf);
+        const saf = localStorage.getItem('pro_added_funds'); if(saf) addedFunds = JSON.parse(saf);
         loadPasswords();
       }
       updateUserPasswords();
@@ -448,90 +471,52 @@
       let filtered=[...transactions]; if(start&&end) filtered=transactions.filter(t=>t.date>=start&&t.date<=end);
       const tbody=document.getElementById('allTransactionsTable'); tbody.innerHTML='';
       filtered.forEach(t=>{
+        // Correction : suppression du "}." parasite
         tbody.innerHTML+=`<tr><td>${t.date}</td><td>${t.cashier}</td><td>${t.bank}</td><td>${t.currency}</td><td>${getActionLabel(t)}</td><td>${formatNumber(t.amount)}</td><td>${t.quantity || 1}</td><td>${formatNumber(t.commissionG||0)} G</td><td>${formatNumber(t.commissionUSD||0)} USD</td><td>${t.bureau||'—'}</td></tr>`;
       });
     }
-    
-    // Recherche avec séparation Unibank / Standard
     function performSearch(){ 
       const kw=document.getElementById('searchKeyword').value.toLowerCase(), sd=document.getElementById('searchStartDate').value, ed=document.getElementById('searchEndDate').value, bureauFilter=document.getElementById('searchBureauFilter').value;
       let ft=transactions; 
       if(sd) ft=ft.filter(t=>t.date>=sd); if(ed) ft=ft.filter(t=>t.date<=ed); if(kw) ft=ft.filter(t=>Object.values(t).some(v=>String(v).toLowerCase().includes(kw))); if(bureauFilter) ft=ft.filter(t=>t.bureau===bureauFilter);
       
-      // Séparer Unibank et autres
-      const standardTx = ft.filter(t => t.bank !== 'Unibank tt kote');
-      const unibankTx = ft.filter(t => t.bank === 'Unibank tt kote');
-      
-      // Statistiques Standard (Payés / Expédiés)
-      let stdPayeQtyG = 0, stdPayeAmtG = 0, stdPayeQtyUSD = 0, stdPayeAmtUSD = 0;
-      let stdExpQtyG = 0, stdExpAmtG = 0, stdExpQtyUSD = 0, stdExpAmtUSD = 0;
-      standardTx.forEach(t => {
-        const qty = t.quantity || 1;
-        const amount = t.amount;
-        if(t.action === 'transfert_paye') {
-          if(t.currency === 'Gourde') { stdPayeQtyG += qty; stdPayeAmtG += amount; }
-          else if(t.currency === 'USD') { stdPayeQtyUSD += qty; stdPayeAmtUSD += amount; }
-        } else if(t.action === 'transfert_expedie') {
-          if(t.currency === 'Gourde') { stdExpQtyG += qty; stdExpAmtG += amount; }
-          else if(t.currency === 'USD') { stdExpQtyUSD += qty; stdExpAmtUSD += amount; }
+      let payeQtyG=0, payeAmtG=0, payeQtyUSD=0, payeAmtUSD=0;
+      let expedieQtyG=0, expedieAmtG=0, expedieQtyUSD=0, expedieAmtUSD=0;
+      ft.forEach(t => {
+        const qty=t.quantity||1;
+        const amt=t.amount;
+        // Déterminer si c'est une entrée (Payé/Dépôt) ou sortie (Expédié/Retrait)
+        const isEntry = (t.bank === 'Unibank tt kote') ? (t.action === 'depot' || t.action === 'ouverture_compte' || t.action === 'souscription') : (t.action === 'transfert_paye');
+        if(isEntry) {
+          if(t.currency === 'Gourde') { payeQtyG += qty; payeAmtG += amt; }
+          else if(t.currency === 'USD') { payeQtyUSD += qty; payeAmtUSD += amt; }
+        } else {
+          if(t.currency === 'Gourde') { expedieQtyG += qty; expedieAmtG += amt; }
+          else if(t.currency === 'USD') { expedieQtyUSD += qty; expedieAmtUSD += amt; }
         }
       });
-      
-      // Statistiques Unibank (Dépôts / Retraits)
-      let uniDepotQtyG = 0, uniDepotAmtG = 0, uniDepotQtyUSD = 0, uniDepotAmtUSD = 0;
-      let uniRetraitQtyG = 0, uniRetraitAmtG = 0, uniRetraitQtyUSD = 0, uniRetraitAmtUSD = 0;
-      unibankTx.forEach(t => {
-        const qty = t.quantity || 1;
-        const amount = t.amount;
-        if(t.action === 'depot' || t.action === 'ouverture_compte' || t.action === 'souscription') {
-          if(t.currency === 'Gourde') { uniDepotQtyG += qty; uniDepotAmtG += amount; }
-          else if(t.currency === 'USD') { uniDepotQtyUSD += qty; uniDepotAmtUSD += amount; }
-        } else if(t.action === 'retrait') {
-          if(t.currency === 'Gourde') { uniRetraitQtyG += qty; uniRetraitAmtG += amount; }
-          else if(t.currency === 'USD') { uniRetraitQtyUSD += qty; uniRetraitAmtUSD += amount; }
-        }
-      });
-      
       const summaryDiv = document.getElementById('searchSummary');
-      if(ft.length > 0){
+      if(ft.length>0){
         summaryDiv.style.display='block';
-        let html = `<div><strong>${ft.length} transaction(s) trouvée(s)</strong></div>`;
-        
-        // Section Standard (non Unibank)
-        if(standardTx.length > 0) {
-          html += `<div style="margin-top:12px;"><strong>🏦 TRANSFERT STANDARD (hors Unibank)</strong></div>`;
-          html += `<div>📥 <strong>Payés (entrées)</strong></div>`;
-          html += `<div>💰 Gourdes : Quantité = ${stdPayeQtyG} | Montant total = ${formatNumber(stdPayeAmtG)} G</div>`;
-          html += `<div>💵 USD : Quantité = ${stdPayeQtyUSD} | Montant total = ${formatNumber(stdPayeAmtUSD)} USD</div>`;
-          html += `<div>📤 <strong>Expédiés (sorties)</strong></div>`;
-          html += `<div>💰 Gourdes : Quantité = ${stdExpQtyG} | Montant total = ${formatNumber(stdExpAmtG)} G</div>`;
-          html += `<div>💵 USD : Quantité = ${stdExpQtyUSD} | Montant total = ${formatNumber(stdExpAmtUSD)} USD</div>`;
-        }
-        
-        // Section Unibank
-        if(unibankTx.length > 0) {
-          html += `<div style="margin-top:12px;"><strong>🏦 UNIBANK TT KOTE</strong></div>`;
-          html += `<div>📥 <strong>Dépôts (entrées)</strong></div>`;
-          html += `<div>💰 Gourdes : Quantité = ${uniDepotQtyG} | Montant total = ${formatNumber(uniDepotAmtG)} G</div>`;
-          html += `<div>💵 USD : Quantité = ${uniDepotQtyUSD} | Montant total = ${formatNumber(uniDepotAmtUSD)} USD</div>`;
-          html += `<div>📤 <strong>Retraits (sorties)</strong></div>`;
-          html += `<div>💰 Gourdes : Quantité = ${uniRetraitQtyG} | Montant total = ${formatNumber(uniRetraitAmtG)} G</div>`;
-          html += `<div>💵 USD : Quantité = ${uniRetraitQtyUSD} | Montant total = ${formatNumber(uniRetraitAmtUSD)} USD</div>`;
-        }
-        summaryDiv.innerHTML = html;
-      } else {
-        summaryDiv.style.display='none';
-      }
+        summaryDiv.innerHTML = `
+          <div><strong>${ft.length} transaction(s) trouvée(s)</strong></div>
+          <div>📥 <strong>Transferts Payés / Dépôts (entrées)</strong></div>
+          <div>💰 Gourdes : Quantité = ${payeQtyG} | Montant total = ${formatNumber(payeAmtG)} G</div>
+          <div>💵 USD : Quantité = ${payeQtyUSD} | Montant total = ${formatNumber(payeAmtUSD)} USD</div>
+          <div>📤 <strong>Transferts Expédiés / Retraits (sorties)</strong></div>
+          <div>💰 Gourdes : Quantité = ${expedieQtyG} | Montant total = ${formatNumber(expedieAmtG)} G</div>
+          <div>💵 USD : Quantité = ${expedieQtyUSD} | Montant total = ${formatNumber(expedieAmtUSD)} USD</div>
+        `;
+      } else { summaryDiv.style.display='none'; }
       
-      // Tableau des transactions
       const tbody=document.getElementById('searchTransactionsResult'); 
       tbody.innerHTML=''; 
       ft.forEach(t=>{
+        // Correction : suppression des "}." parasites
         tbody.innerHTML+=`<tr data-id="${t.id}"><td>${t.date}</td><td>${t.cashier}</td><td>${t.bank}</td><td>${t.currency}</td><td>${getActionLabel(t)}</td><td>${formatNumber(t.amount)}</td><td>${t.quantity || 1}</td><td>${formatNumber(t.commissionG||0)} G</td><td>${formatNumber(t.commissionUSD||0)} USD</td><td>${t.bureau||'—'}</td><td class="action-buttons"><button class="btn btn-warning btn-icon" onclick="editTransaction(${t.id})">✏️ Modifier</button></td></tr>`;
       }); 
       if(ft.length===0) tbody.innerHTML='<tr><td colspan="11">Aucune transaction</td></tr>';
     }
-    
     window.editTransaction=function(id){ const t=transactions.find(tx=>tx.id===id); if(!t) return; editingTransId=id; document.getElementById('editFormFields').innerHTML=`
       <div class="form-group"><label>Date</label><input type="date" id="editDate" value="${t.date}" class="edit-input"></div>
       <div class="form-group"><label>Caissier</label><input type="text" id="editCashier" value="${t.cashier}" class="edit-input"></div>
@@ -539,7 +524,7 @@
       <div class="form-group"><label>Devise</label><select id="editCurrency" class="edit-input"><option ${t.currency==='Gourde'?'selected':''}>Gourde</option><option ${t.currency==='USD'?'selected':''}>USD</option></select></div>
       <div class="form-group"><label>Type</label><select id="editAction" class="edit-input"><option ${t.action==='transfert_paye'?'selected':''} value="transfert_paye">Payé</option><option ${t.action==='transfert_expedie'?'selected':''} value="transfert_expedie">Expédié</option><option ${t.action==='depot'?'selected':''} value="depot">Dépôt</option><option ${t.action==='retrait'?'selected':''} value="retrait">Retrait</option><option ${t.action==='ouverture_compte'?'selected':''} value="ouverture_compte">Ouverture compte</option><option ${t.action==='souscription'?'selected':''} value="souscription">Souscription</option></select></div>
       <div class="form-group"><label>Montant</label><input type="text" id="editAmount" value="${formatNumber(t.amount)}" class="edit-input number-input" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"></div>
-      <div class="form-group"><label>Quantité</label><input type="number" id="editQuantity" value="${t.quantity || 1}" class="edit-input"></div>
+      <div class="form-group"><label>Quantité</label><input type="number" id="editQuantity" value="${t.quantity||1}" class="edit-input"></div>
       <div class="form-group"><label>Commission G</label><input type="text" id="editCommissionG" value="${formatNumber(t.commissionG||0)}" class="edit-input number-input" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"></div>
       <div class="form-group"><label>Commission USD</label><input type="text" id="editCommissionUSD" value="${formatNumber(t.commissionUSD||0)}" class="edit-input number-input" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"></div>
       <div class="form-group"><label>Bureau</label><select id="editBureau" class="edit-input"><option ${t.bureau==='Bureau central'?'selected':''}>Bureau central</option><option ${t.bureau==='Bureau 4 chemins'?'selected':''}>Bureau 4 chemins</option></select></div>`;
@@ -548,7 +533,7 @@
     document.getElementById('saveEditBtn')?.addEventListener('click',()=>{ if(editingTransId){ const idx=transactions.findIndex(t=>t.id===editingTransId); if(idx!==-1){ transactions[idx]={...transactions[idx], date:document.getElementById('editDate').value, cashier:document.getElementById('editCashier').value, bank:document.getElementById('editBank').value, currency:document.getElementById('editCurrency').value, action:document.getElementById('editAction').value, amount:parseNumber(document.getElementById('editAmount').value), quantity:parseInt(document.getElementById('editQuantity').value)||1, commissionG:parseNumber(document.getElementById('editCommissionG').value), commissionUSD:parseNumber(document.getElementById('editCommissionUSD').value), bureau:document.getElementById('editBureau').value}; saveAllData(); refreshCaisseHistory(); refreshRapportTable(); performSearch(); showNotification("Transaction modifiée!"); } } document.getElementById('editModal').style.display='none'; editingTransId=null; });
     document.getElementById('cancelEditBtn')?.addEventListener('click',()=>{ document.getElementById('editModal').style.display='none'; editingTransId=null; });
     
-    // ==================== GESTION DE PRÊT (inchangée, raccourcie pour lisibilité) ====================
+    // ==================== GESTION DE PRÊT (inchangée, fonctionnelle) ====================
     function refreshCreditorSelects() {
       const selects = ['loanCreditorSelect', 'paymentCreditorSelect', 'creditorStatementSelect'];
       selects.forEach(id => { const sel = document.getElementById(id); if(sel) { sel.innerHTML = '<option value="">-- Sélectionner --</option>'; creditors.forEach(c => { sel.innerHTML += `<option value="${c.id}">${c.code} - ${c.owner} (${c.company})</option>`; }); } });
@@ -699,167 +684,219 @@
     document.getElementById('editCreditorBtn')?.addEventListener('click', editCreditor);
     document.getElementById('printCreditorBtn')?.addEventListener('click', printCreditor);
     
-    // ==================== GRANDE CAISSE (inchangée mais avec impression sans heure) ====================
-    function formatGrandeCaisseInput(input) { let raw = parseNumber(input.value); input.value = formatNumber(raw); updateGrandeCaisseCalculations(); }
-    function renderAvailableFunds() {
-      const container = document.getElementById('availableFundsContainer');
+    // ==================== GRANDE CAISSE (inchangée, fonctionnelle) ====================
+    function updateGrandeCaisseRaw(input) { let raw = parseNumber(input.value); input._rawValue = raw; updateGrandeCaisseCalculations(); }
+    function formatGrandeCaisseInput(input) { let raw = input._rawValue !== undefined ? input._rawValue : parseNumber(input.value); input.value = formatNumber(raw); updateGrandeCaisseCalculations(); }
+    function renderAddedFunds() {
+      const container = document.getElementById('addedFundsContainer');
       if(!container) return;
       let html = '';
-      availableFunds.forEach((f, idx) => {
-        html += `<div class="dynamic-list-row"><input type="text" placeholder="Provenance" value="${f.provenance||''}" onchange="updateAvailableFund(${idx},'provenance',this.value)" style="flex:2;"><input type="text" placeholder="Montant" value="${formatNumber(f.montant||0)}" onchange="updateAvailableFund(${idx},'montant',parseNumber(this.value))" onblur="formatGrandeCaisseInput(this)" style="flex:1;"><input type="date" value="${f.date||''}" onchange="updateAvailableFund(${idx},'date',this.value)" style="flex:1;"><button class="btn btn-danger btn-small" onclick="removeAvailableFund(${idx})">X</button></div>`;
+      addedFunds.forEach((f, idx) => {
+        html += `<div class="dynamic-list-row"><input type="text" placeholder="Provenance" value="${f.provenance||''}" onchange="updateAddedFund(${idx},'provenance',this.value)" style="flex:2;"><input type="text" placeholder="Montant" value="${formatNumber(f.montant||0)}" onchange="updateAddedFund(${idx},'montant',parseNumber(this.value))" onblur="formatGrandeCaisseInput(this)" style="flex:1;"><input type="date" value="${f.date||''}" onchange="updateAddedFund(${idx},'date',this.value)" style="flex:1;"><button class="btn btn-danger btn-small" onclick="removeAddedFund(${idx})">X</button></div>`;
       });
       container.innerHTML = html;
       updateGrandeCaisseCalculations();
     }
-    window.updateAvailableFund = (idx, field, val) => { if(availableFunds[idx]) availableFunds[idx][field] = val; renderAvailableFunds(); saveAllData(); };
-    window.removeAvailableFund = (idx) => { availableFunds.splice(idx,1); renderAvailableFunds(); saveAllData(); };
-    document.getElementById('addAvailableFundBtn')?.addEventListener('click', () => { availableFunds.push({id:Date.now(), provenance:"", montant:0, date:getTodayDate()}); renderAvailableFunds(); });
-    
-    function renderInterTransfers(){ let c=document.getElementById('interTransfersContainer'); if(!c)return; let h=''; interTransfers.forEach((t,i)=>{h+=`<div class="dynamic-list-row"><input placeholder="Caissier" value="${t.caissier||''}" onchange="updateInterTransfer(${i},'caissier',this.value)" style="flex:2;"><input type="text" placeholder="Montant" value="${formatNumber(t.montant||0)}" onchange="updateInterTransfer(${i},'montant',parseNumber(this.value))" onblur="formatGrandeCaisseInput(this)" style="flex:1;"><input type="date" value="${t.date||''}" onchange="updateInterTransfer(${i},'date',this.value)" style="flex:1;"><button class="btn btn-danger btn-small" onclick="removeInterTransfer(${i})">X</button></div>`;}); c.innerHTML=h; updateGrandeCaisseCalculations(); }
-    window.updateInterTransfer=(i,f,v)=>{if(interTransfers[i]) interTransfers[i][f]=v; if(f==='montant') interTransfers[i].montant = v; renderInterTransfers(); saveAllData();};
+    window.updateAddedFund = (idx, field, val) => { if(addedFunds[idx]) addedFunds[idx][field] = val; renderAddedFunds(); saveAllData(); };
+    window.removeAddedFund = (idx) => { addedFunds.splice(idx,1); renderAddedFunds(); saveAllData(); };
+    document.getElementById('addAddedFundBtn')?.addEventListener('click', () => { addedFunds.push({id:Date.now(), provenance:"", montant:0, date:getTodayDate()}); renderAddedFunds(); });
+    function renderInterTransfers(){ let c=document.getElementById('interTransfersContainer'); if(!c)return; let h=''; interTransfers.forEach((t,i)=>{h+=`<div class="dynamic-list-row"><input placeholder="Provenance" value="${t.provenance||t.caissier||''}" onchange="updateInterTransfer(${i},'provenance',this.value)" style="flex:2;"><input type="text" placeholder="Montant" value="${formatNumber(t.montant||0)}" onchange="updateInterTransfer(${i},'montant',parseNumber(this.value))" onblur="formatGrandeCaisseInput(this)" style="flex:1;"><input type="date" value="${t.date||''}" onchange="updateInterTransfer(${i},'date',this.value)" style="flex:1;"><button class="btn btn-danger btn-small" onclick="removeInterTransfer(${i})">X</button></div>`;}); c.innerHTML=h; updateGrandeCaisseCalculations(); }
+    window.updateInterTransfer=(i,f,v)=>{if(interTransfers[i]) interTransfers[i][f]=v; if(f==='montant') interTransfers[i].montant=v; renderInterTransfers(); saveAllData();};
     window.removeInterTransfer=i=>{interTransfers.splice(i,1); renderInterTransfers(); saveAllData();};
-    document.getElementById('addInterTransferBtn')?.addEventListener('click',()=>{interTransfers.push({id:Date.now(),caissier:"",montant:0,date:getTodayDate()}); renderInterTransfers();});
-    
+    document.getElementById('addInterTransferBtn')?.addEventListener('click',()=>{interTransfers.push({id:Date.now(),provenance:"",montant:0,date:getTodayDate()}); renderInterTransfers();});
     function renderPhysicalCashiers(){ let c=document.getElementById('physicalCountsContainer'); if(!c)return; let h=''; physicalCashiers.forEach((p,i)=>{h+=`<div class="dynamic-list-row"><input placeholder="Caissier" value="${p.nom||''}" onchange="updatePhysicalCashier(${i},'nom',this.value)" style="flex:2;"><input type="text" placeholder="Montant" value="${formatNumber(p.montant||0)}" onchange="updatePhysicalCashier(${i},'montant',parseNumber(this.value))" onblur="formatGrandeCaisseInput(this)" style="flex:1;"><input type="date" value="${p.date||''}" onchange="updatePhysicalCashier(${i},'date',this.value)" style="flex:1;"><button class="btn btn-danger btn-small" onclick="removePhysicalCashier(${i})">X</button></div>`;}); c.innerHTML=h; updateGrandeCaisseCalculations(); }
-    window.updatePhysicalCashier=(i,f,v)=>{if(physicalCashiers[i]) physicalCashiers[i][f]=v; if(f==='montant') physicalCashiers[i].montant = v; renderPhysicalCashiers(); saveAllData();};
+    window.updatePhysicalCashier=(i,f,v)=>{if(physicalCashiers[i]) physicalCashiers[i][f]=v; if(f==='montant') physicalCashiers[i].montant=v; renderPhysicalCashiers(); saveAllData();};
     window.removePhysicalCashier=i=>{physicalCashiers.splice(i,1); renderPhysicalCashiers(); saveAllData();};
     document.getElementById('addPhysicalCashierBtn')?.addEventListener('click',()=>{physicalCashiers.push({id:Date.now(),nom:"",montant:0,date:getTodayDate()}); renderPhysicalCashiers();});
-    
     function updateGrandeCaisseCalculations() {
-      const getVal = (id) => { const el = document.getElementById(id); if (!el) return 0; let raw = parseNumber(el.value); return isNaN(raw) ? 0 : raw; };
-      let totalAvailable = availableFunds.reduce((s,f)=>s+(parseNumber(f.montant)||0),0);
+      const getVal = (id) => { const el = document.getElementById(id); if (!el) return 0; let raw = el._rawValue !== undefined ? el._rawValue : parseNumber(el.value); return isNaN(raw) ? 0 : raw; };
+      let opening = getVal('openingBalance');
+      let totalAdded = addedFunds.reduce((s,f)=>s+(parseNumber(f.montant)||0),0);
+      let totalAvailable = opening + totalAdded;
       let unibank = getVal('manualUnibank'), western = getVal('manualWestern'), unitransfert = getVal('manualUnitransfert'), moneygram = getVal('manualMoneygram'), cam = getVal('manualCam');
       let payments = unibank + western + unitransfert + moneygram + cam;
       let totalInter = interTransfers.reduce((s,t)=>s+(parseNumber(t.montant)||0),0);
       let acquisitions = getVal('otherAcquisitions'), bills = getVal('otherBills'), disbursements = getVal('otherDisbursements'), withdrawn = getVal('amountWithdrawn');
       let totalOther = acquisitions + bills + disbursements + withdrawn;
+      let totalOutflow = payments + totalInter + totalOther;
       let totalPhysical = physicalCashiers.reduce((s,p)=>s+(parseNumber(p.montant)||0),0);
-      let finalBalance = totalPhysical;
+      let finalBalance = totalAvailable - totalOutflow;
       const symbol = grandeCaisseCurrentCurrency === "Gourde" ? "G" : "USD";
+      document.getElementById('totalAddedDisplay').innerHTML = formatNumber(totalAdded) + ' ' + symbol;
       document.getElementById('totalAvailableDisplay').innerHTML = formatNumber(totalAvailable) + ' ' + symbol;
       document.getElementById('totalPaymentsDisplay').innerHTML = formatNumber(payments) + ' ' + symbol;
       document.getElementById('totalInterTransfersDisplay').innerHTML = formatNumber(totalInter) + ' ' + symbol;
       document.getElementById('totalOtherDisbursementsDisplay').innerHTML = formatNumber(totalOther) + ' ' + symbol;
+      document.getElementById('totalOutflowDisplay').innerHTML = formatNumber(totalOutflow) + ' ' + symbol;
       document.getElementById('totalPhysicalDisplay').innerHTML = formatNumber(totalPhysical) + ' ' + symbol;
       document.getElementById('finalBalanceDisplay').innerHTML = formatNumber(finalBalance) + ' ' + symbol;
     }
-    
     function saveGrandeCaisseReport(){ 
-      let date=document.getElementById('reportDateFunds').value, bureau=document.getElementById('bureauSelect').value; 
-      let totalAvailable = availableFunds.reduce((s,f)=>s+(parseNumber(f.montant)||0),0);
-      let paiementTransferts=parseNumber(document.getElementById('manualUnibank').value)+parseNumber(document.getElementById('manualWestern').value)+parseNumber(document.getElementById('manualUnitransfert').value)+parseNumber(document.getElementById('manualMoneygram').value)+parseNumber(document.getElementById('manualCam').value); 
-      let transfertFonds=interTransfers.reduce((s,t)=>s+(parseNumber(t.montant)||0),0); 
-      let autresDecaissements=parseNumber(document.getElementById('otherAcquisitions').value)+parseNumber(document.getElementById('otherBills').value)+parseNumber(document.getElementById('otherDisbursements').value)+parseNumber(document.getElementById('amountWithdrawn').value); 
-      let decomptesPhysiques=physicalCashiers.reduce((s,p)=>s+(parseNumber(p.montant)||0),0); 
-      let balanceFinJournee=decomptesPhysiques;
+      let date=document.getElementById('reportDateFunds').value, bureau=document.getElementById('bureauSelect').value;
+      let opening = parseNumber(document.getElementById('openingBalance').value);
+      let totalAdded = addedFunds.reduce((s,f)=>s+(parseNumber(f.montant)||0),0);
+      let totalAvailable = opening + totalAdded;
+      let unibank=parseNumber(document.getElementById('manualUnibank').value), western=parseNumber(document.getElementById('manualWestern').value), unitransfert=parseNumber(document.getElementById('manualUnitransfert').value), moneygram=parseNumber(document.getElementById('manualMoneygram').value), cam=parseNumber(document.getElementById('manualCam').value);
+      let payments = unibank+western+unitransfert+moneygram+cam;
+      let totalInter = interTransfers.reduce((s,t)=>s+(parseNumber(t.montant)||0),0);
+      let acquisitions=parseNumber(document.getElementById('otherAcquisitions').value), bills=parseNumber(document.getElementById('otherBills').value), disbursements=parseNumber(document.getElementById('otherDisbursements').value), withdrawn=parseNumber(document.getElementById('amountWithdrawn').value);
+      let totalOther = acquisitions+bills+disbursements+withdrawn;
+      let totalOutflow = payments + totalInter + totalOther;
+      let totalPhysical = physicalCashiers.reduce((s,p)=>s+(parseNumber(p.montant)||0),0);
+      let finalBalance = totalAvailable - totalOutflow;
       let currency = grandeCaisseCurrentCurrency;
-      dailyReports[date]={date,bureau,currency,availableFunds:JSON.parse(JSON.stringify(availableFunds)),totalAvailable:totalAvailable,paiementTransferts:paiementTransferts,transfertFonds:transfertFonds,autresDecaissements:autresDecaissements,decomptesPhysiques:decomptesPhysiques,balanceFinJournee:balanceFinJournee}; 
+      dailyReports[date]={ date, bureau, currency, openingBalance:opening, addedFunds:JSON.parse(JSON.stringify(addedFunds)), totalAdded, totalAvailable,
+        unibank, western, unitransfert, moneygram, cam, payments, interTransfers:JSON.parse(JSON.stringify(interTransfers)), totalInter,
+        acquisitions, bills, disbursements, withdrawn, totalOther, totalOutflow, physicalCashiers:JSON.parse(JSON.stringify(physicalCashiers)), totalPhysical, finalBalance };
       saveAllData(); refreshGrandeCaisseHistory(); showNotification("Rapport Grande Caisse enregistré!"); 
     }
     function loadGrandeCaisseReportForDate(){ 
       let date=document.getElementById('reportDateFunds').value, s=dailyReports[date]; 
       if(s){ 
         document.getElementById('bureauSelect').value=s.bureau||"Bureau Central"; 
-        availableFunds = s.availableFunds || [];
-        if(s.currency && document.getElementById('grandeCaisseCurrency')) { document.getElementById('grandeCaisseCurrency').value = s.currency; grandeCaisseCurrentCurrency = s.currency; }
-        ['manualUnibank','manualWestern','manualUnitransfert','manualMoneygram','manualCam','otherAcquisitions','otherBills','otherDisbursements','amountWithdrawn'].forEach(id => { if(s[id] !== undefined) document.getElementById(id).value = formatNumber(s[id]); else document.getElementById(id).value = formatNumber(0); });
+        document.getElementById('openingBalance').value=formatNumber(s.openingBalance);
+        addedFunds = s.addedFunds || [];
         interTransfers = s.interTransfers || [];
         physicalCashiers = s.physicalCashiers || [];
+        document.getElementById('manualUnibank').value=formatNumber(s.unibank||0);
+        document.getElementById('manualWestern').value=formatNumber(s.western||0);
+        document.getElementById('manualUnitransfert').value=formatNumber(s.unitransfert||0);
+        document.getElementById('manualMoneygram').value=formatNumber(s.moneygram||0);
+        document.getElementById('manualCam').value=formatNumber(s.cam||0);
+        document.getElementById('otherAcquisitions').value=formatNumber(s.acquisitions||0);
+        document.getElementById('otherBills').value=formatNumber(s.bills||0);
+        document.getElementById('otherDisbursements').value=formatNumber(s.disbursements||0);
+        document.getElementById('amountWithdrawn').value=formatNumber(s.withdrawn||0);
+        if(s.currency && document.getElementById('grandeCaisseCurrency')) { document.getElementById('grandeCaisseCurrency').value = s.currency; grandeCaisseCurrentCurrency = s.currency; }
       } else resetGrandeCaisseForm(); 
-      renderAvailableFunds(); renderInterTransfers(); renderPhysicalCashiers(); 
+      renderAddedFunds(); renderInterTransfers(); renderPhysicalCashiers(); 
+      document.querySelectorAll('#grandeCaisseSection .number-input').forEach(inp => { inp._rawValue = parseNumber(inp.value); });
       updateGrandeCaisseCalculations(); 
     }
     function resetGrandeCaisseForm(){ 
       document.getElementById('bureauSelect').value="Bureau Central"; 
-      ['manualUnibank','manualWestern','manualUnitransfert','manualMoneygram','manualCam','otherAcquisitions','otherBills','otherDisbursements','amountWithdrawn'].forEach(id => { document.getElementById(id).value = formatNumber(0); });
-      availableFunds = []; interTransfers = []; physicalCashiers = []; 
-      renderAvailableFunds(); renderInterTransfers(); renderPhysicalCashiers(); updateGrandeCaisseCalculations(); 
+      document.getElementById('openingBalance').value=formatNumber(0);
+      addedFunds = []; interTransfers = []; physicalCashiers = [];
+      document.getElementById('manualUnibank').value=formatNumber(0);
+      document.getElementById('manualWestern').value=formatNumber(0);
+      document.getElementById('manualUnitransfert').value=formatNumber(0);
+      document.getElementById('manualMoneygram').value=formatNumber(0);
+      document.getElementById('manualCam').value=formatNumber(0);
+      document.getElementById('otherAcquisitions').value=formatNumber(0);
+      document.getElementById('otherBills').value=formatNumber(0);
+      document.getElementById('otherDisbursements').value=formatNumber(0);
+      document.getElementById('amountWithdrawn').value=formatNumber(0);
+      renderAddedFunds(); renderInterTransfers(); renderPhysicalCashiers(); updateGrandeCaisseCalculations(); 
     }
     function refreshGrandeCaisseHistory(){ 
       let c=document.getElementById('grandeCaisseHistory'); if(!c)return; 
       let dates=Object.keys(dailyReports).sort().reverse(); 
       if(!dates.length){c.innerHTML='<div>Aucun rapport enregistré</div>';return;} 
       let h=''; 
-      dates.forEach(d=>{
-        let r=dailyReports[d]; 
-        let symbol = (r.currency === "Gourde" ? "G" : "USD");
-        let details = `
-          <div class="historique-item" style="margin-bottom:16px;">
-            <div style="font-weight:700; margin-bottom:8px;">📅 ${d} - ${r.bureau} (${symbol})</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.8rem;">
-              <div>💰 Fonds disponible :</div><div>${formatNumber(r.totalAvailable)} ${symbol}</div>
-              <div>💸 Paiement transferts :</div><div>${formatNumber(r.paiementTransferts)} ${symbol}</div>
-              <div>🔄 Transfert inter-bureau :</div><div>${formatNumber(r.transfertFonds)} ${symbol}</div>
-              <div>📉 Autres décaissements :</div><div>${formatNumber(r.autresDecaissements)} ${symbol}</div>
-              <div>🧾 Décomptes physiques :</div><div>${formatNumber(r.decomptesPhysiques)} ${symbol}</div>
-              <div style="border-top:1px solid var(--border); margin-top:6px; padding-top:6px; font-weight:700;">📌 Balance fin de journée :</div>
-              <div style="font-weight:800; color:var(--primary);">${formatNumber(r.balanceFinJournee)} ${symbol}</div>
-            </div>
-            <div class="action-buttons-row" style="margin-top:10px;">
-              <button class="btn btn-outline btn-small print-history-item" data-date="${d}"><i class="fas fa-print"></i> Imprimer ce rapport</button>
-            </div>
+      dates.forEach(d=>{ let r=dailyReports[d]; let symbol = r.currency==="Gourde"?"G":"USD";
+        h+=`<div class="historique-item" style="margin-bottom:20px; padding:16px;">
+          <div style="font-weight:700; margin-bottom:12px; font-size:1.1rem;">📅 ${d} - ${r.bureau}</div>
+          <div style="margin-bottom:12px;">
+            <div><strong>Montant Disponible debut/Journée :</strong> ${formatNumber(r.openingBalance)} ${symbol}</div>
+            <div><strong>Total Montant Ajouté de la Journée :</strong> ${formatNumber(r.totalAdded)} ${symbol}</div>
+            <div><strong>FONDS DISPONIBLES/JOURNEE :</strong> ${formatNumber(r.totalAvailable)} ${symbol}</div>
           </div>
-        `;
-        h += details;
+          <div style="margin-bottom:12px;">
+            <div><strong>Paiement Transfer :</strong> ${formatNumber(r.payments)} ${symbol}</div>
+            <div><strong>Transfer de fonds :</strong> ${formatNumber(r.totalInter)} ${symbol}</div>
+            <div><strong>Autres Decaisements :</strong> ${formatNumber(r.totalOther)} ${symbol}</div>
+            <div><strong>TOTAL - SORTIE DE FONDS :</strong> ${formatNumber(r.totalOutflow)} ${symbol}</div>
+          </div>
+          <div style="margin-bottom:8px;">
+            <div><strong>BALANCE DE FERMETURE :</strong> ${formatNumber(r.finalBalance)} ${symbol}</div>
+          </div>
+          <div class="action-buttons-row" style="margin-top:12px;">
+            <button class="btn btn-outline btn-small print-history-item" data-date="${d}"><i class="fas fa-print"></i> Imprimer ce rapport</button>
+          </div>
+        </div>`;
       }); 
       c.innerHTML=h;
       document.querySelectorAll('.print-history-item').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const date = btn.getAttribute('data-date');
           const report = dailyReports[date];
-          if(report) printGrandeCaisseHistoryItem(report);
+          if(report) printGrandeCaisseReport(report);
         });
       });
     }
-    function printGrandeCaisseHistoryItem(r) {
+    function printGrandeCaisseReport(r) {
       const symbol = r.currency === "Gourde" ? "G" : "USD";
+      let addedDetails = '';
+      if(r.addedFunds && r.addedFunds.length){
+        addedDetails = '<div style="margin-top:10px;"><strong>Détail des montants ajoutés :</strong><ul>';
+        r.addedFunds.forEach(f => { addedDetails += `<li>${f.provenance || '—'} : ${formatNumber(f.montant)} ${symbol} (${f.date})</li>`; });
+        addedDetails += '</ul></div>';
+      }
+      let interDetails = '';
+      if(r.interTransfers && r.interTransfers.length){
+        interDetails = '<div style="margin-top:10px;"><strong>Détail des transferts de fonds :</strong><ul>';
+        r.interTransfers.forEach(t => { interDetails += `<li>${t.provenance || t.caissier || '—'} : ${formatNumber(t.montant)} ${symbol} (${t.date})</li>`; });
+        interDetails += '</ul></div>';
+      }
+      let physicalDetails = '';
+      if(r.physicalCashiers && r.physicalCashiers.length){
+        physicalDetails = '<div style="margin-top:10px;"><strong>Détail des décomptes physiques :</strong><ul>';
+        r.physicalCashiers.forEach(p => { physicalDetails += `<li>Caissier ${p.nom || '—'} : ${formatNumber(p.montant)} ${symbol} (${p.date})</li>`; });
+        physicalDetails += '</ul></div>';
+      }
       const printWindow = window.open('', '_blank');
-      printWindow.document.write(`
-        <html>
-        <head><title>Rapport Grande Caisse - ${r.date}</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          h1 { color: #1e4a6b; }
-          .report-box { border: 1px solid #ccc; padding: 15px; border-radius: 8px; margin-top: 20px; }
-          .line { display: flex; justify-content: space-between; margin-bottom: 8px; }
-          .label { font-weight: bold; }
-          .total { font-size: 1.2em; font-weight: bold; margin-top: 15px; border-top: 1px solid #333; padding-top: 10px; }
-        </style>
-        </head>
-        <body>
-        <h1>Rapport Grande Caisse</h1>
-        <p><strong>Date :</strong> ${r.date}</p>
-        <p><strong>Bureau :</strong> ${r.bureau}</p>
-        <p><strong>Devise :</strong> ${symbol}</p>
-        <div class="report-box">
-          <div class="line"><span class="label">Total fonds disponible :</span> <span>${formatNumber(r.totalAvailable)} ${symbol}</span></div>
-          <div class="line"><span class="label">Paiement des transferts :</span> <span>${formatNumber(r.paiementTransferts)} ${symbol}</span></div>
-          <div class="line"><span class="label">Transfert des fonds inter-bureau :</span> <span>${formatNumber(r.transfertFonds)} ${symbol}</span></div>
-          <div class="line"><span class="label">Autres décaissements :</span> <span>${formatNumber(r.autresDecaissements)} ${symbol}</span></div>
-          <div class="line"><span class="label">Décomptes physiques :</span> <span>${formatNumber(r.decomptesPhysiques)} ${symbol}</span></div>
-          <div class="line total"><span class="label">Balance fin de journée :</span> <span>${formatNumber(r.balanceFinJournee)} ${symbol}</span></div>
-        </div>
-        </body>
-        </html>
-      `);
+      printWindow.document.write(`<html><head><title>Rapport Grande Caisse - ${r.date}</title><style>body{font-family:Arial;padding:20px;} .section{margin-bottom:20px;} .line{display:flex;justify-content:space-between;margin-bottom:6px;} .total{font-weight:bold;margin-top:15px;border-top:1px solid #333;padding-top:10px;}</style></head><body><h1>Rapport Grande Caisse</h1><p><strong>Date :</strong> ${r.date}</p><p><strong>Bureau :</strong> ${r.bureau}</p><p><strong>Devise :</strong> ${symbol}</p><div class="section"><div class="line"><span>Montant Disponible debut/Journée :</span><span>${formatNumber(r.openingBalance)} ${symbol}</span></div><div class="line"><span>Total Montant Ajouté de la Journée :</span><span>${formatNumber(r.totalAdded)} ${symbol}</span></div>${addedDetails}<div class="line total"><span>FONDS DISPONIBLES/JOURNEE :</span><span>${formatNumber(r.totalAvailable)} ${symbol}</span></div></div><div class="section"><div class="line"><span>Paiement Transfer :</span><span>${formatNumber(r.payments)} ${symbol}</span></div><div class="line"><span>Transfer de fonds :</span><span>${formatNumber(r.totalInter)} ${symbol}</span></div>${interDetails}<div class="line"><span>Autres Decaisements :</span><span>${formatNumber(r.totalOther)} ${symbol}</span></div><div class="line total"><span>TOTAL - SORTIE DE FONDS :</span><span>${formatNumber(r.totalOutflow)} ${symbol}</span></div></div><div class="section"><div class="line total"><span>BALANCE DE FERMETURE :</span><span>${formatNumber(r.finalBalance)} ${symbol}</span></div>${physicalDetails}</div><div><em>Justificatif : FONDS DISPONIBLES = TOTAL SORTIE DE FONDS + BALANCE DE FERMETURE</em></div></body></html>`);
       printWindow.document.close();
       printWindow.print();
     }
-    
-    function printGrandeCaisse() {
-      const date = document.getElementById('reportDateFunds').value;
-      const s = dailyReports[date];
-      if(!s){ alert("Aucun rapport pour cette date"); return; }
-      printGrandeCaisseHistoryItem(s);
+    function printCurrentGrandeCaisse() {
+      let date = document.getElementById('reportDateFunds').value;
+      let bureau = document.getElementById('bureauSelect').value;
+      let opening = parseNumber(document.getElementById('openingBalance').value);
+      let totalAdded = addedFunds.reduce((s,f)=>s+(parseNumber(f.montant)||0),0);
+      let totalAvailable = opening + totalAdded;
+      let unibank=parseNumber(document.getElementById('manualUnibank').value), western=parseNumber(document.getElementById('manualWestern').value), unitransfert=parseNumber(document.getElementById('manualUnitransfert').value), moneygram=parseNumber(document.getElementById('manualMoneygram').value), cam=parseNumber(document.getElementById('manualCam').value);
+      let payments = unibank+western+unitransfert+moneygram+cam;
+      let totalInter = interTransfers.reduce((s,t)=>s+(parseNumber(t.montant)||0),0);
+      let acquisitions=parseNumber(document.getElementById('otherAcquisitions').value), bills=parseNumber(document.getElementById('otherBills').value), disbursements=parseNumber(document.getElementById('otherDisbursements').value), withdrawn=parseNumber(document.getElementById('amountWithdrawn').value);
+      let totalOther = acquisitions+bills+disbursements+withdrawn;
+      let totalOutflow = payments + totalInter + totalOther;
+      let totalPhysical = physicalCashiers.reduce((s,p)=>s+(parseNumber(p.montant)||0),0);
+      let finalBalance = totalAvailable - totalOutflow;
+      let currency = grandeCaisseCurrentCurrency;
+      const symbol = currency === "Gourde" ? "G" : "USD";
+      let addedDetails = '';
+      if(addedFunds.length){
+        addedDetails = '<div style="margin-top:10px;"><strong>Détail des montants ajoutés :</strong><ul>';
+        addedFunds.forEach(f => { addedDetails += `<li>${f.provenance || '—'} : ${formatNumber(f.montant)} ${symbol} (${f.date})</li>`; });
+        addedDetails += '</ul></div>';
+      }
+      let interDetails = '';
+      if(interTransfers.length){
+        interDetails = '<div style="margin-top:10px;"><strong>Détail des transferts de fonds :</strong><ul>';
+        interTransfers.forEach(t => { interDetails += `<li>${t.provenance || t.caissier || '—'} : ${formatNumber(t.montant)} ${symbol} (${t.date})</li>`; });
+        interDetails += '</ul></div>';
+      }
+      let physicalDetails = '';
+      if(physicalCashiers.length){
+        physicalDetails = '<div style="margin-top:10px;"><strong>Détail des décomptes physiques :</strong><ul>';
+        physicalCashiers.forEach(p => { physicalDetails += `<li>Caissier ${p.nom || '—'} : ${formatNumber(p.montant)} ${symbol} (${p.date})</li>`; });
+        physicalDetails += '</ul></div>';
+      }
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`<html><head><title>Rapport Grande Caisse - ${date}</title><style>body{font-family:Arial;padding:20px;} .section{margin-bottom:20px;} .line{display:flex;justify-content:space-between;margin-bottom:6px;} .total{font-weight:bold;margin-top:15px;border-top:1px solid #333;padding-top:10px;}</style></head><body><h1>Rapport Grande Caisse</h1><p><strong>Date :</strong> ${date}</p><p><strong>Bureau :</strong> ${bureau}</p><p><strong>Devise :</strong> ${symbol}</p><div class="section"><div class="line"><span>Montant Disponible debut/Journée :</span><span>${formatNumber(opening)} ${symbol}</span></div><div class="line"><span>Total Montant Ajouté de la Journée :</span><span>${formatNumber(totalAdded)} ${symbol}</span></div>${addedDetails}<div class="line total"><span>FONDS DISPONIBLES/JOURNEE :</span><span>${formatNumber(totalAvailable)} ${symbol}</span></div></div><div class="section"><div class="line"><span>Paiement Transfer :</span><span>${formatNumber(payments)} ${symbol}</span></div><div class="line"><span>Transfer de fonds :</span><span>${formatNumber(totalInter)} ${symbol}</span></div>${interDetails}<div class="line"><span>Autres Decaisements :</span><span>${formatNumber(totalOther)} ${symbol}</span></div><div class="line total"><span>TOTAL - SORTIE DE FONDS :</span><span>${formatNumber(totalOutflow)} ${symbol}</span></div></div><div class="section"><div class="line total"><span>BALANCE DE FERMETURE :</span><span>${formatNumber(finalBalance)} ${symbol}</span></div>${physicalDetails}</div><div><em>Justificatif : FONDS DISPONIBLES = TOTAL SORTIE DE FONDS + BALANCE DE FERMETURE</em></div></body></html>`);
+      printWindow.document.close();
+      printWindow.print();
     }
-    document.getElementById('printGrandeCaisseBtn')?.addEventListener('click', printGrandeCaisse);
+    document.getElementById('printGrandeCaisseBtn')?.addEventListener('click', printCurrentGrandeCaisse);
+    document.getElementById('grandeCaisseCurrency')?.addEventListener('change', function() { grandeCaisseCurrentCurrency = this.value; updateGrandeCaisseCalculations(); refreshGrandeCaisseHistory(); });
     
-    // ==================== EXPORT / IMPORT ====================
+    // ==================== EXPORT / IMPORT (inchangés) ====================
     function exportFullCSV(data, filename, headers, mapper){ let rows=[headers]; data.forEach(d=>rows.push(mapper(d))); const blob=new Blob(["\uFEFF"+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n')],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
     function exportAllTransactions(){ exportFullCSV(transactions,'transactions_completes.csv',['Date','Caissier','Maison','Devise','Type','Montant','Quantité','Commission G','Commission USD','Bureau'],t=>[t.date,t.cashier,t.bank,t.currency,getActionLabel(t),formatRawNumber(t.amount),t.quantity||1,formatRawNumber(t.commissionG||0),formatRawNumber(t.commissionUSD||0),t.bureau||'—']); showNotification("Export complet!"); }
     function exportReportFull(){ const data=transactions.map(t=>[t.date,getActionLabel(t),t.bank+' - '+t.cashier,formatRawNumber(t.amount),t.currency,formatRawNumber(t.commissionG||0),formatRawNumber(t.commissionUSD||0),t.bureau||'—']); exportFullCSV(transactions,'rapport_complet.csv',['Date','Type','Maison/Caissier','Montant','Devise','Commission G','Commission USD','Bureau'],(_,i)=>data[i]); showNotification("Export rapport complet!"); }
-    function exportFullDataToJSON() { const fullData = { transactions, creditors, creditorLoans, creditorPayments, dailyReports, interTransfers, physicalCashiers, availableFunds, adminPassword, caissePassword }; const dataStr = JSON.stringify(fullData, null, 2); const blob = new Blob([dataStr], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ats_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`; a.click(); URL.revokeObjectURL(a.href); showNotification("Données exportées avec succès!"); }
-    function importFullDataFromJSON(file) { const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); transactions = data.transactions || []; creditors = data.creditors || []; creditorLoans = data.creditorLoans || []; creditorPayments = data.creditorPayments || []; dailyReports = data.dailyReports || {}; interTransfers = data.interTransfers || []; physicalCashiers = data.physicalCashiers || []; availableFunds = data.availableFunds || []; if(data.adminPassword) adminPassword = data.adminPassword; if(data.caissePassword) caissePassword = data.caissePassword; saveAllData(); updateUserPasswords(); refreshCaisseHistory(); refreshRapportTable(); performSearch(); refreshCreditorSelects(); refreshStatement(); if(document.getElementById('grandeCaisseSection')?.style.display !== 'none') { loadGrandeCaisseReportForDate(); refreshGrandeCaisseHistory(); } showNotification("Données importées avec succès!"); } catch(err) { showNotification("Erreur lors de l'importation", false); } }; reader.readAsText(file); }
+    function exportFullDataToJSON() { const fullData = { transactions, creditors, creditorLoans, creditorPayments, dailyReports, interTransfers, physicalCashiers, addedFunds, adminPassword, caissePassword }; const dataStr = JSON.stringify(fullData, null, 2); const blob = new Blob([dataStr], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ats_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`; a.click(); URL.revokeObjectURL(a.href); showNotification("Données exportées avec succès!"); }
+    function importFullDataFromJSON(file) { const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); transactions = data.transactions || []; creditors = data.creditors || []; creditorLoans = data.creditorLoans || []; creditorPayments = data.creditorPayments || []; dailyReports = data.dailyReports || {}; interTransfers = data.interTransfers || []; physicalCashiers = data.physicalCashiers || []; addedFunds = data.addedFunds || []; if(data.adminPassword) adminPassword = data.adminPassword; if(data.caissePassword) caissePassword = data.caissePassword; saveAllData(); updateUserPasswords(); refreshCaisseHistory(); refreshRapportTable(); performSearch(); refreshCreditorSelects(); refreshStatement(); if(document.getElementById('grandeCaisseSection')?.style.display !== 'none') { loadGrandeCaisseReportForDate(); refreshGrandeCaisseHistory(); } showNotification("Données importées avec succès!"); } catch(err) { showNotification("Erreur lors de l'importation", false); } }; reader.readAsText(file); }
     
     function updateAdminPassword(){ const np=document.getElementById('newAdminPass').value.trim(); if(!np){alert("Entrez mot de passe Admin");return;} adminPassword=np; saveAllData(); updateUserPasswords(); document.getElementById('newAdminPass').value=''; document.getElementById('passMsg').innerHTML='<span style="color:green;">✓ Mot de passe Admin mis à jour</span>'; setTimeout(()=>document.getElementById('passMsg').innerHTML='',3000); showNotification("Mot de passe Admin changé!"); }
     function updateCaissePassword(){ const np=document.getElementById('newCaissePass').value.trim(); if(!np){alert("Entrez mot de passe Caisse");return;} caissePassword=np; saveAllData(); updateUserPasswords(); document.getElementById('newCaissePass').value=''; document.getElementById('passMsg').innerHTML='<span style="color:green;">✓ Mot de passe Caisse mis à jour</span>'; setTimeout(()=>document.getElementById('passMsg').innerHTML='',3000); showNotification("Mot de passe Caisse changé!"); }
@@ -885,7 +922,7 @@
       refreshCaisseHistory(); refreshRapportTable(); 
       resetGrandeCaisseForm(); refreshGrandeCaisseHistory(); 
       toggleBankInterface(); 
-      renderAvailableFunds(); renderInterTransfers(); renderPhysicalCashiers(); 
+      renderAddedFunds(); renderInterTransfers(); renderPhysicalCashiers(); 
       startConnectionMonitoring();
       refreshCreditorSelects(); refreshStatement();
       if(currentUser.role==='limited_caisse'){ document.querySelector('.nav-item.active')?.classList.remove('active'); document.getElementById('navCaisse').classList.add('active'); document.getElementById('caisseSection').style.display='block'; document.getElementById('pageTitle').innerText='Caisse'; } 
