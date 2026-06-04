@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>ATS - Système de Gestion Financière</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -14,7 +13,7 @@
       --warning: #d97706; --shadow-sm: 0 4px 12px rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.05);
       --shadow-md: 0 8px 24px rgba(0,0,0,0.05); --radius: 20px; --sidebar-width: 320px;
     }
-    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; overflow-x: hidden; }
+    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; overflow-x: hidden; }
     .app-wrapper { display: flex; min-height: 100vh; position: relative; }
     .sidebar {
       width: var(--sidebar-width); background: var(--card); border-right: 1px solid var(--border);
@@ -154,7 +153,7 @@
     .edit-modal-container {
       background: white;
       border-radius: 16px;
-      width: 500px;
+      width: 700px;
       max-width: 90%;
       max-height: 80vh;
       overflow-y: auto;
@@ -209,10 +208,9 @@
     .loan-statement-table { width: 100%; font-size: 0.8rem; }
     .loan-statement-table th, .loan-statement-table td { padding: 8px; text-align: left; border-bottom: 1px solid var(--border); }
     .action-buttons-row { display: flex; gap: 12px; margin-top: 10px; justify-content: flex-end; }
-    .dynamic-list-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; }
+    .dynamic-list-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; flex-wrap: wrap; }
     .dynamic-list-row input, .dynamic-list-row select { flex: 1; padding: 6px; border-radius: 8px; border: 1px solid var(--border); }
     .dynamic-list-row button { padding: 4px 8px; }
-    /* Décomptes physiques exactement comme sur l'image */
     .decomptes-section {
       background: var(--bg);
       border-radius: 16px;
@@ -240,12 +238,18 @@
       font-weight: 800;
       margin-top: 8px;
     }
+    /* Séparation claire pour FONDS DE FERMETURE */
     .fermeture-row {
       display: flex;
       justify-content: space-between;
       padding: 12px 0;
       font-weight: 800;
       font-size: 1rem;
+      border-top: 2px solid var(--primary-dark);
+      margin-top: 16px;
+      background-color: #fef3c7;
+      border-radius: 12px;
+      padding: 12px 16px;
     }
     .highlight-amount {
       background-color: #fef08a;
@@ -263,12 +267,76 @@
       font-size: 1rem;
       font-weight: 500;
     }
+    .egalite-row {
+      background: #e0f2fe;
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #0c4a6e;
+    }
+    .unibank-operation-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .unibank-operation-row .op-label {
+      flex: 1;
+      font-weight: 600;
+    }
+    .unibank-operation-row input, .unibank-operation-row select {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      width: 110px;
+    }
+    .creditor-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      padding: 10px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    .csv-import-group {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px dashed var(--border);
+    }
+    .creditors-list-scroll {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .history-report-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .history-section-block {
+      margin: 12px 0;
+      padding: 8px 0;
+    }
+    .history-section-block:not(:last-child) {
+      border-bottom: 1px dashed #ccc;
+    }
     @media print {
       .sidebar, .menu-toggle-btn, .overlay, .page-header button, .btn, .date-nav, .action-buttons-row, .edit-modal-overlay, .no-print { display: none !important; }
       .main-content { margin: 0; padding: 0; }
       .form-card, .creditor-card, .table-container { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
       .highlight-amount { background-color: #ffff99 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; text-decoration: underline; }
+      .signature-space { margin-top: 40px; border-top: 1px solid #000; padding-top: 10px; text-align: center; }
     }
+    .signature-space { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 15px; text-align: center; font-style: italic; }
   </style>
 </head>
 <body>
@@ -302,29 +370,39 @@
           </div>
         </div>
 
-        <!-- CAISSE (inchangée) -->
+        <!-- CAISSE -->
         <div id="caisseSection" class="page-section">
-          <div class="form-card"><h3>Gestion de Caisse</h3><div class="form-grid"><div class="form-group"><label>DATE D'ENREGISTREMENT</label><input type="date" id="transactionDate" value=""></div><div class="form-group"><label>Nom du caissier</label><input type="text" id="cashierName" placeholder="Entrez votre nom"></div><div class="form-group"><label>Maison de transfert</label><select id="bankSelect"><option>Uni-transfer</option><option>Unibank tt kote</option><option>Western Union</option><option>Moneygram</option><option>Cam transfer</option></select></div><div class="form-group"><label>BUREAU</label><select id="transactionBureau"><option value="Bureau central">Bureau central</option><option value="Bureau 4 chemins">Bureau 4 chemins</option></select></div></div></div>
+          <div class="form-card"><h3>Gestion de Caisse</h3><div class="form-grid"><div class="form-group"><label>DATE D'ENREGISTREMENT</label><input type="date" id="transactionDate" value=""></div><div class="form-group"><label>Nom du caissier</label><input type="text" id="cashierName" placeholder="Entrez votre nom"></div><div class="form-group"><label>Maison de transfert</label><select id="bankSelect"><option>Uni-transfer</option><option>Unibank tt kote</option><option>Western Union</option><option>Moneygram</option><option>Cam transfert</option></select></div><div class="form-group"><label>BUREAU</label><select id="transactionBureau"><option value="Bureau central">Bureau central</option><option value="Bureau 4 chemins">Bureau 4 chemins</option></select></div></div></div>
           <div id="standardInterface" class="form-card"><h3>Opération standard</h3><div class="form-grid"><div class="form-group"><label>Devise</label><select id="currencySelect"><option>Gourde</option><option>USD</option></select></div><div class="form-group"><label>Type de transfert</label><select id="actionSelect"><option value="transfert_expedie">Transfert expédié</option><option value="transfert_paye">Transfert payé</option></select></div><div class="form-group"><label>Montant</label><input type="text" id="amountInput" placeholder="0.00" class="number-input" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"></div><div class="form-group"><label>NOMBRE DE TRANSFERT EFFECTUÉ</label><input type="number" id="quantityInput" placeholder="1" value="1"></div></div><div class="commission-row"><div class="form-group"><label>Commission (Gourde)</label><input type="text" id="commissionGInput" placeholder="0.00" class="number-input" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"></div><div class="form-group"><label>Commission (USD)</label><input type="text" id="commissionUSDInput" placeholder="0.00" class="number-input" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"></div></div><button class="btn btn-primary" id="saveTransactionBtn">Enregistrer</button></div>
-          <div id="unibankInterface" class="form-card unibank-card" style="display:none;"><h3>TRANSACTION DE CAISSE UNIBANK TOUT KOTE</h3><div class="form-grid"><div class="form-group"><label>DATE</label><input type="date" id="unibankDate" value=""></div><div class="form-group"><label>Devise</label><select id="unibankCurrency"><option>Gourde</option><option>USD</option></select></div><div class="form-group"><label>TYPE D'OPÉRATION</label><select id="unibankOperationType"><option value="depot">DÉPÔT</option><option value="retrait">RETRAIT</option><option value="ouverture_compte">OUVERTURE DE COMPTE</option><option value="souscription">SOUSCRIPTION</option></select></div></div><div style="background:var(--bg); border-radius:12px; padding:16px; margin:16px 0;"><div class="finance-row"><span class="finance-label">DESCRIPTION OPÉRATIONS</span><span>QT.</span><span>MONTANT</span><span>COMMISSION G</span><span>COMMISSION USD</span></div><div class="finance-row"><span class="finance-label" id="selectedOperationLabel">DÉPÔT</span><input type="number" id="unibankQuantity" value="1" style="width:70px;"><input type="text" id="unibankAmount" placeholder="0.00" class="number-input" style="width:100px;" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"><input type="text" id="unibankCommissionG" placeholder="0.00" class="number-input" style="width:90px;" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"><input type="text" id="unibankCommissionUSD" placeholder="0.00" class="number-input" style="width:90px;" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"></div></div><button class="btn btn-primary" id="saveUnibankTransactionBtn">Enregistrer</button></div>
+          <div id="unibankInterface" class="form-card unibank-card" style="display:none;"><h3>TRANSACTION DE CAISSE UNIBANK TOUT KOTE</h3><div class="form-grid"><div class="form-group"><label>Devise</label><select id="unibankCurrency"><option>Gourde</option><option>USD</option></select></div><div class="form-group"><label>TYPE D'OPÉRATION</label><select id="unibankOperationType"><option value="depot">DÉPÔT</option><option value="retrait">RETRAIT</option><option value="ouverture_compte">OUVERTURE DE COMPTE</option><option value="souscription">SOUSCRIPTION</option></select></div></div><div class="unibank-operation-row"><span class="op-label">DESCRIPTION OPÉRATIONS</span><span>QT.</span><span>MONTANT</span><span>COMMISSION G</span><span>COMMISSION USD</span></div><div class="unibank-operation-row"><span class="op-label" id="selectedOperationLabel">DÉPÔT</span><input type="number" id="unibankQuantity" value="1" style="width:80px;"><input type="text" id="unibankAmount" placeholder="0.00" class="number-input" style="width:120px;" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"><input type="text" id="unibankCommissionG" placeholder="0.00" class="number-input" style="width:120px;" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"><input type="text" id="unibankCommissionUSD" placeholder="0.00" class="number-input" style="width:120px;" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"></div><button class="btn btn-primary" id="saveUnibankTransactionBtn">Enregistrer</button></div>
           <div class="form-card"><h3>Historique des transactions</h3><div class="date-nav"><button class="btn btn-outline btn-small" id="prevDayCaisse">◀ Jour précédent</button><span id="currentDateDisplay">Aujourd'hui</span><button class="btn btn-outline btn-small" id="nextDayCaisse">Jour suivant ▶</button><button class="btn btn-outline btn-small" id="resetDateCaisse">Aujourd'hui</button></div><div id="caisseHistory" class="historique-list"></div></div>
         </div>
 
-        <!-- RECHERCHE (inchangée) -->
+        <!-- RECHERCHE -->
         <div id="rechercheSection" class="page-section" style="display:none;"><div class="form-card"><h3>Recherche universelle</h3><div class="form-grid"><div class="form-group"><label>Mot-clé</label><input type="text" id="searchKeyword" placeholder="Nom, banque, téléphone..."></div><div class="form-group"><label>Date début</label><input type="date" id="searchStartDate" value=""></div><div class="form-group"><label>Date fin</label><input type="date" id="searchEndDate" value=""></div><div class="form-group"><label>BUREAU</label><select id="searchBureauFilter"><option value="">Tous</option><option value="Bureau central">Bureau central</option><option value="Bureau 4 chemins">Bureau 4 chemins</option></select></div></div><div style="display: flex; gap: 12px; flex-wrap: wrap;"><button class="btn btn-primary" id="performSearchBtn">Rechercher</button><button class="btn btn-outline" id="resetSearchBtn">Réinitialiser</button><button class="btn btn-outline" id="exportSearchResultsBtn">Exporter résultats</button></div></div>
           <div class="form-card"><h3>RÉSULTATS DES TRANSACTIONS</h3><div id="searchSummary" class="search-stats" style="display:none;"></div><div class="table-container"><table id="searchResultsTable"><thead><tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Quantité</th><th>Commission G</th><th>Commission USD</th><th>Bureau</th><th>Actions</th></tr></thead><tbody id="searchTransactionsResult"></tbody></table></div></div>
           <div id="editModal" class="edit-modal-overlay"><div class="edit-modal-container"><h3>Modifier la transaction</h3><div id="editFormFields"></div><div class="edit-modal-actions"><button class="btn btn-outline" id="cancelEditBtn">Annuler</button><button class="btn btn-primary" id="saveEditBtn">Enregistrer</button></div></div></div>
         </div>
 
-        <!-- GESTION DE PRÊT (inchangée) -->
+        <!-- GESTION DE PRÊT -->
         <div id="pretSection" class="page-section" style="display:none;">
           <div class="form-card"><h3>Enregistrement (Créancier)</h3><div class="form-grid"><div class="form-group"><label>Date d'enregistrement</label><input type="date" id="creditorDate" value=""></div><div class="form-group"><label>Nom (Entreprise)</label><input id="creditorCompany" placeholder="Nom de l'entreprise"></div><div class="form-group"><label>Nom Propriétaire</label><input id="creditorOwner" placeholder="Nom complet"></div><div class="form-group"><label>Code</label><input id="creditorCode" placeholder="Code unique"></div><div class="form-group"><label>Téléphone</label><input id="creditorPhone" placeholder="+509"></div><div class="form-group"><label>Adresse (optionnel)</label><input id="creditorAddress" placeholder="Adresse"></div></div><button class="btn btn-primary" id="saveCreditorBtn">Enregistrer</button></div>
           <div class="form-card"><h3>Enregistrer un prêt</h3><div class="form-grid"><div class="form-group"><label>Sélectionner un créancier</label><select id="loanCreditorSelect"></select></div><div class="form-group"><label>Date du prêt</label><input type="date" id="loanDate"></div><div class="form-group"><label>Montant du Prêt</label><input type="text" id="loanAmountNew" placeholder="0.00" class="number-input" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"></div><div class="form-group"><label>Devise</label><select id="loanCurrency"><option value="HTG">HTG (Gourde)</option><option value="USD">USD</option></select></div><div class="form-group"><label>Raison (optionnel)</label><textarea id="loanReasonNew" rows="2" placeholder="Raison"></textarea></div></div><button class="btn btn-success" id="saveLoanBtn">Enregistrer</button></div>
+          
+          <div class="form-card">
+            <h3>Liste des créanciers</h3>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label>Rechercher (nom ou entreprise)</label>
+              <input type="text" id="searchCreditorInput" placeholder="Tapez pour filtrer...">
+            </div>
+            <div id="creditorsListContainer" class="creditors-list-scroll"></div>
+          </div>
+          
           <div class="form-card"><h3>Effectuer un remboursement</h3><div class="form-grid"><div class="form-group"><label>Sélectionner un créancier</label><select id="paymentCreditorSelect"></select></div><div class="form-group"><label>Date du remboursement</label><input type="date" id="paymentDate"></div><div class="form-group"><label>Montant remboursé</label><input type="text" id="paymentAmount" placeholder="0.00" class="number-input" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onblur="formatNumberInput(this)"></div><div class="form-group"><label>Devise</label><select id="paymentCurrency"><option value="HTG">HTG</option><option value="USD">USD</option></select></div><div class="form-group"><label>Méthode de remboursement</label><select id="paymentMethod"><option value="cash">Cash</option><option value="transfer">Virement Bancaire</option></select></div></div><div id="bankDetailsFields" style="display:none;" class="method-details"><div class="form-group"><label>Banque</label><input type="text" id="bankName" placeholder="Nom de la banque"></div><div class="form-group"><label>Numéro de compte</label><input type="text" id="accountNumber" placeholder="Numéro de compte"></div></div><button class="btn btn-primary" id="savePaymentBtn">Enregistrer</button></div>
           <div class="form-card"><h3>FICHE D'UN CRÉANCIER</h3><div class="form-group"><label>Choisir un créancier</label><select id="creditorStatementSelect"></select></div><div id="creditorDetails" class="creditor-card"><h4>Informations</h4><p><strong>Code:</strong> <span id="detailCode">—</span></p><p><strong>Nom:</strong> <span id="detailName">—</span></p><p><strong>Entreprise:</strong> <span id="detailCompany">—</span></p><p><strong>Téléphone:</strong> <span id="detailPhone">—</span></p><p><strong>Adresse:</strong> <span id="detailAddress">—</span></p><div class="action-buttons-row"><button class="btn btn-outline btn-small" id="editCreditorBtn">Modifier</button><button class="btn btn-outline btn-small" id="printCreditorBtn">Imprimer la fiche</button></div></div><div style="margin-top: 20px;"><div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;"><label>Devise :</label><select id="statementCurrency"><option value="HTG">HTG (Gourde)</option><option value="USD">USD</option></select></div><div class="table-container"><table class="loan-statement-table"><thead><tr><th>NO.</th><th>Date</th><th>Montant Emprunté</th><th>Montant remboursé</th><th>Balance</th></tr></thead><tbody id="statementTableBody"></tbody></table></div></div></div>
         </div>
 
-        <!-- GRANDE CAISSE (historique simplifié, sans détails superflus) -->
+        <!-- GRANDE CAISSE -->
         <div id="grandeCaisseSection" class="page-section" style="display:none;">
           <div class="form-card">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
@@ -341,15 +419,15 @@
                   <div class="finance-section" style="margin-top:10px;"><h4>Montants Ajoutés</h4><div id="addedFundsContainer"></div><button class="btn btn-outline btn-small" id="addAddedFundBtn">Ajouter</button><div class="finance-row total" style="margin-top:10px;"><span>TOTAL MONTANTS AJOUTES</span><span id="totalAddedDisplay">0.00 G</span></div></div>
                   <div class="finance-row total"><span>FONDS DISPONIBLES/JOURNEE</span><span id="totalAvailableDisplay">0.00 G</span></div>
                 </div>
-                <div class="finance-section"><h4>PAIEMENT TRANSFER</h4><div class="finance-row"><span>Unibank tt kote</span><input type="text" id="manualUnibank" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                <div class="finance-section"><h4>PAIEMENT TRANSFERT</h4><div class="finance-row"><span>Unibank tt kote</span><input type="text" id="manualUnibank" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
                   <div class="finance-row"><span>Western Union</span><input type="text" id="manualWestern" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
                   <div class="finance-row"><span>Unitransfert</span><input type="text" id="manualUnitransfert" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
                   <div class="finance-row"><span>Moneygram</span><input type="text" id="manualMoneygram" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
                   <div class="finance-row"><span>Cam</span><input type="text" id="manualCam" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
-                  <div class="finance-row total"><span>TOTAL PAIEMENT TRANSFER</span><span id="totalPaymentsDisplay">0.00 G</span></div>
+                  <div class="finance-row total"><span>TOTAL PAIEMENT TRANSFERT</span><span id="totalPaymentsDisplay">0.00 G</span></div>
                 </div>
                 <div class="finance-section"><h4>TRANSFERT DE FONDS</h4><div id="interTransfersContainer"></div><button class="btn btn-outline btn-small" id="addInterTransferBtn">Ajouter</button><div class="finance-row total"><span>TOTAL TRANSFERT DE FONDS</span><span id="totalInterTransfersDisplay">0.00 G</span></div></div>
-                <div class="finance-section"><h4>AUTRES DECAISSEMENTS</h4><div class="finance-row"><span>Acquisitions bureau</span><input type="text" id="otherAcquisitions" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
+                <div class="finance-section"><h4>AUTRES DECAISSEMENTS</h4><div class="finance-row"><span>Acquisitions de biens/Bureau</span><input type="text" id="otherAcquisitions" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
                   <div class="finance-row"><span>Paiements factures</span><input type="text" id="otherBills" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
                   <div class="finance-row"><span>Autres décaissements</span><input type="text" id="otherDisbursements" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
                   <div class="finance-row"><span>Montant prélevé</span><input type="text" id="amountWithdrawn" class="finance-amount number-input" placeholder="0.00" value="0" oninput="updateGrandeCaisseRaw(this)" onblur="formatGrandeCaisseInput(this)"></div>
@@ -357,7 +435,6 @@
                 </div>
               </div>
               <div>
-                <!-- Décomptes physiques comme sur l'image -->
                 <div class="decomptes-section">
                   <div class="decomptes-header">
                     <h4>DÉCOMPTES PHYSIQUES</h4>
@@ -368,6 +445,7 @@
                     <span>TOTAL DÉCOMPTES</span>
                     <span id="totalDecomptesDisplay">0.00 G</span>
                   </div>
+                  <!-- FONDS DE FERMETURE clairement séparé avec son style -->
                   <div class="fermeture-row">
                     <span>FONDS DE FERMETURE</span>
                     <span id="fondFermetureDisplay">0.00 G</span>
@@ -380,16 +458,36 @@
           <div class="form-card"><h3>HISTORIQUE DES RAPPORTS DE FONDS DE LA JOURNEE</h3><div id="grandeCaisseHistory" class="historique-list"></div></div>
         </div>
 
-        <!-- RAPPORT & COMPTABILITÉ (inchangé) -->
+        <!-- RAPPORT & COMPTABILITÉ -->
         <div id="rapportSection" class="page-section" style="display:none;">
           <div class="form-card"><h3>RAPPORT DE PÉRIODE</h3><div class="filter-row"><div class="form-group"><label>Date début</label><input type="date" id="reportStart" value=""></div><div class="form-group"><label>Date fin</label><input type="date" id="reportEnd" value=""></div><button class="btn btn-primary" id="applyFilterBtn">Filtrer</button><button class="btn btn-outline" id="exportReportBtn">Exporter</button></div></div>
           <div class="form-card"><h3>DÉTAIL DES TRANSACTIONS</h3><div class="table-container"><table class="report-table"><thead><tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Quantité</th><th>Commission (G)</th><th>Commission (USD)</th><th>Bureau</th></tr></thead><tbody id="allTransactionsTable"></tbody></table></div></div>
         </div>
 
-        <!-- PARAMETRES (inchangé) -->
+        <!-- PARAMETRES -->
         <div id="parametresSection" class="page-section" style="display:none;">
           <div class="form-card"><h3>Sécurité - Changer les mots de passe</h3><div class="form-grid"><div class="form-group"><label>Nouveau mot de passe ADMIN</label><input type="password" id="newAdminPass" placeholder="Nouveau mot de passe admin"></div><div class="form-group"><label>Nouveau mot de passe CAISSE</label><input type="password" id="newCaissePass" placeholder="Nouveau mot de passe caisse"></div></div><div style="display: flex; gap: 12px;"><button class="btn btn-primary" id="updateAdminPassBtn">Mettre à jour Admin</button><button class="btn btn-primary" id="updateCaissePassBtn">Mettre à jour Caisse</button></div><p id="passMsg" style="margin-top: 12px;"></p></div>
-          <div class="form-card"><h3>Synchronisation des données</h3><p style="margin-bottom: 12px;">Exportez vos données pour les importer sur un autre ordinateur.</p><button class="btn btn-primary" id="exportFullDataBtn">Exporter toutes les données (JSON)</button><input type="file" id="importFileInput" accept=".json" style="display:none;"><button class="btn btn-outline" id="importFullDataBtn" style="margin-left: 12px;">Importer données (JSON)</button></div>
+          <div class="form-card"><h3>Synchronisation des données</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+              <button class="btn btn-primary" id="exportTransactionsCSV">Exporter Transactions (CSV)</button>
+              <button class="btn btn-primary" id="exportCreditorsCSV">Exporter Créanciers (CSV)</button>
+              <button class="btn btn-primary" id="exportLoansCSV">Exporter Prêts (CSV)</button>
+              <button class="btn btn-primary" id="exportPaymentsCSV">Exporter Remboursements (CSV)</button>
+              <button class="btn btn-primary" id="exportReportsCSV">Exporter Rapports GC (CSV)</button>
+            </div>
+            <div class="csv-import-group">
+              <label><strong>Importer des données (CSV) :</strong> (remplace les transactions existantes)</label>
+              <input type="file" id="importTransactionsCSV" accept=".csv" style="margin-top: 10px; display: block;">
+              <button class="btn btn-outline" id="doImportTransactionsCSV" style="margin-top: 8px;">Importer Transactions CSV</button>
+              <p style="font-size: 0.7rem; margin-top: 8px;">Format attendu: Date,Caissier,Maison,Devise,Type,Montant,Quantité,Commission G,Commission USD,Bureau</p>
+            </div>
+            <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px;">
+              <p><strong>Backup complet (JSON) :</strong></p>
+              <button class="btn btn-primary" id="exportFullDataBtn">Exporter toutes les données (JSON)</button>
+              <input type="file" id="importFileInput" accept=".json" style="display:none;">
+              <button class="btn btn-outline" id="importFullDataBtn" style="margin-left: 12px;">Importer données (JSON)</button>
+            </div>
+          </div>
         </div>
       </main>
     </div>
@@ -403,10 +501,9 @@
     function updateConnectionStatus() {
       const onlineDot = document.getElementById('onlineDot'), offlineDot = document.getElementById('offlineDot'), statusText = document.getElementById('statusText');
       if (!onlineDot) return;
-      if (navigator.onLine) { onlineDot.className = 'status-dot online'; offlineDot.className = 'status-dot offline'; statusText.innerText = 'En ligne'; statusText.style.color = '#10b981';
-      } else { onlineDot.className = 'status-dot offline'; offlineDot.className = 'status-dot online'; statusText.innerText = 'Hors ligne'; statusText.style.color = '#ef4444'; }
+      onlineDot.className = 'status-dot online'; offlineDot.className = 'status-dot offline'; statusText.innerText = 'En ligne (local)'; statusText.style.color = '#10b981';
     }
-    function startConnectionMonitoring() { updateConnectionStatus(); window.addEventListener('online', updateConnectionStatus); window.addEventListener('offline', updateConnectionStatus); setInterval(updateConnectionStatus, 5000); }
+    function startConnectionMonitoring() { updateConnectionStatus(); }
     
     function formatNumber(num) { if (isNaN(num)) num = 0; return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     function parseNumber(str) { if (!str) return 0; const cleaned = str.toString().replace(/,/g, ''); return parseFloat(cleaned) || 0; }
@@ -494,7 +591,7 @@
       const comG=parseNumber(document.getElementById('commissionGInput').value);
       const comUSD=parseNumber(document.getElementById('commissionUSDInput').value);
       const bureau = document.getElementById('transactionBureau').value;
-      const {dateStr}=getNow(), tDate=document.getElementById('transactionDate').value||dateStr;
+      const tDate=document.getElementById('transactionDate').value||getTodayDate();
       transactions.push({id:Date.now(),cashier,bank,currency,action,amount,quantity:qty,commissionG:comG,commissionUSD:comUSD,date:tDate,bureau});
       saveAllData(); refreshCaisseHistory(); refreshRapportTable(); showNotification("Transaction enregistrée!");
       document.getElementById('amountInput').value=''; document.getElementById('commissionGInput').value=''; document.getElementById('commissionUSDInput').value=''; document.getElementById('quantityInput').value='1';
@@ -507,7 +604,7 @@
       const qty=parseInt(document.getElementById('unibankQuantity').value)||1;
       const comG=parseNumber(document.getElementById('unibankCommissionG').value);
       const comUSD=parseNumber(document.getElementById('unibankCommissionUSD').value);
-      const tDate=document.getElementById('unibankDate').value;
+      const tDate=document.getElementById('transactionDate').value||getTodayDate();
       const bureau = document.getElementById('transactionBureau').value;
       transactions.push({id:Date.now(),cashier,bank,currency,action:op,amount,quantity:qty,commissionG:comG,commissionUSD:comUSD,date:tDate,bureau});
       saveAllData(); refreshCaisseHistory(); refreshRapportTable(); showNotification("Transaction Unibank enregistrée!");
@@ -528,19 +625,196 @@
       let filtered=[...transactions]; if(start&&end) filtered=transactions.filter(t=>t.date>=start&&t.date<=end);
       const tbody=document.getElementById('allTransactionsTable'); tbody.innerHTML='';
       filtered.forEach(t=>{
-        tbody.innerHTML+=`<tr><td>${t.date}</td><td>${t.cashier}</td><td>${t.bank}</td><td>${t.currency}</td><td>${getActionLabel(t)}</td><td>${formatNumber(t.amount)}</td><td>${t.quantity || 1}</td><td>${formatNumber(t.commissionG||0)} G</td><td>${formatNumber(t.commissionUSD||0)} USD</td><td>${t.bureau||'—'}</td></tr>`;
+        tbody.innerHTML+=`<tr>
+          <td>${t.date}</td>
+          <td>${t.cashier}</td>
+          <td>${t.bank}</td>
+          <td>${t.currency}</td>
+          <td>${getActionLabel(t)}</div></td>
+          <td>${formatNumber(t.amount)}</div></td>
+          <td>${t.quantity || 1}</div></td>
+          <td>${formatNumber(t.commissionG||0)} G</div></td>
+          <td>${formatNumber(t.commissionUSD||0)} USD</div></td>
+          <td>${t.bureau||'—'}</div></tr>
+        `;
       });
     }
-    function performSearch(){ /* identique original */ }
-    window.editTransaction=function(id){ /* stub */ };
-    document.getElementById('saveEditBtn')?.addEventListener('click',()=>{});
-    document.getElementById('cancelEditBtn')?.addEventListener('click',()=>{});
+    
+    // ==================== RECHERCHE MISE À JOUR ====================
+    function performSearch() {
+      const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
+      const startDate = document.getElementById('searchStartDate').value;
+      const endDate = document.getElementById('searchEndDate').value;
+      const bureauFilter = document.getElementById('searchBureauFilter').value;
+      
+      let results = [...transactions];
+      if (startDate) results = results.filter(t => t.date >= startDate);
+      if (endDate) results = results.filter(t => t.date <= endDate);
+      if (bureauFilter) results = results.filter(t => t.bureau === bureauFilter);
+      if (keyword) {
+        results = results.filter(t => 
+          t.cashier.toLowerCase().includes(keyword) || 
+          t.bank.toLowerCase().includes(keyword) ||
+          (t.bureau && t.bureau.toLowerCase().includes(keyword)) ||
+          (t.currency && t.currency.toLowerCase().includes(keyword))
+        );
+      }
+      
+      // Affichage du tableau
+      const tbody = document.getElementById('searchTransactionsResult');
+      tbody.innerHTML = '';
+      if (results.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11">Aucune transaction trouvée</div></td>';
+        document.getElementById('searchSummary').style.display = 'none';
+        return;
+      }
+      results.forEach(t => {
+        tbody.innerHTML += `<tr>
+          <td>${t.date}</div></td>
+          <td>${t.cashier}</div></td>
+          <td>${t.bank}</div></td>
+          <td>${t.currency}</div></td>
+          <td>${getActionLabel(t)}</div></td>
+          <td>${formatNumber(t.amount)}</div></td>
+          <td>${t.quantity || 1}</div></td>
+          <td>${formatNumber(t.commissionG||0)} G</div></td>
+          <td>${formatNumber(t.commissionUSD||0)} USD</div></td>
+          <td>${t.bureau||'—'}</div></td>
+          <td><button class="btn btn-small btn-outline" onclick="editTransaction(${t.id})">Modifier</button></div></td>
+        `;
+      });
+      
+      // Calcul des statistiques (entrées / sorties) incluant Unibank
+      let incoming = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
+      let outgoing = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
+      
+      results.forEach(t => {
+        const isUnibank = t.bank === 'Unibank tt kote';
+        let isIncoming = false;
+        let isOutgoing = false;
+        if (isUnibank) {
+          if (t.action === 'depot' || t.action === 'ouverture_compte' || t.action === 'souscription') isIncoming = true;
+          else if (t.action === 'retrait') isOutgoing = true;
+        } else {
+          if (t.action === 'transfert_paye') isIncoming = true;
+          else if (t.action === 'transfert_expedie') isOutgoing = true;
+        }
+        const qty = t.quantity || 1;
+        const amount = t.amount || 0;
+        const currency = t.currency === 'Gourde' ? 'Gourde' : 'USD';
+        if (isIncoming) {
+          incoming[currency].qty += qty;
+          incoming[currency].amount += amount;
+        } else if (isOutgoing) {
+          outgoing[currency].qty += qty;
+          outgoing[currency].amount += amount;
+        }
+      });
+      
+      const symbolG = 'G';
+      const symbolUSD = 'USD';
+      const summaryHtml = `
+        <div><strong>${results.length} transaction(s) trouvée(s)</strong></div>
+        <div style="margin-top: 10px;"><strong>Transferts Payés / Dépôts (entrées)</strong></div>
+        <div>Gourdes : Quantité = ${incoming.Gourde.qty} | Montant total = ${formatNumber(incoming.Gourde.amount)} ${symbolG}</div>
+        <div>USD : Quantité = ${incoming.USD.qty} | Montant total = ${formatNumber(incoming.USD.amount)} ${symbolUSD}</div>
+        <div style="margin-top: 10px;"><strong>Transferts Expédiés / Retraits (sorties)</strong></div>
+        <div>Gourdes : Quantité = ${outgoing.Gourde.qty} | Montant total = ${formatNumber(outgoing.Gourde.amount)} ${symbolG}</div>
+        <div>USD : Quantité = ${outgoing.USD.qty} | Montant total = ${formatNumber(outgoing.USD.amount)} ${symbolUSD}</div>
+      `;
+      document.getElementById('searchSummary').style.display = 'block';
+      document.getElementById('searchSummary').innerHTML = summaryHtml;
+    }
+    
+    window.editTransaction = function(id) {
+      const trans = transactions.find(t => t.id === id);
+      if (!trans) return;
+      editingTransId = id;
+      const fields = document.getElementById('editFormFields');
+      fields.innerHTML = `
+        <div class="form-group"><label>Date</label><input type="date" id="editDate" value="${trans.date}"></div>
+        <div class="form-group"><label>Caissier</label><input type="text" id="editCashier" value="${trans.cashier}"></div>
+        <div class="form-group"><label>Maison</label><input type="text" id="editBank" value="${trans.bank}"></div>
+        <div class="form-group"><label>Devise</label><input type="text" id="editCurrency" value="${trans.currency}"></div>
+        <div class="form-group"><label>Type</label><input type="text" id="editAction" value="${trans.action}"></div>
+        <div class="form-group"><label>Montant</label><input type="text" id="editAmount" value="${trans.amount}" class="number-input"></div>
+        <div class="form-group"><label>Quantité</label><input type="number" id="editQuantity" value="${trans.quantity || 1}"></div>
+        <div class="form-group"><label>Commission G</label><input type="text" id="editCommissionG" value="${trans.commissionG||0}" class="number-input"></div>
+        <div class="form-group"><label>Commission USD</label><input type="text" id="editCommissionUSD" value="${trans.commissionUSD||0}" class="number-input"></div>
+        <div class="form-group"><label>Bureau</label><input type="text" id="editBureau" value="${trans.bureau||''}"></div>
+      `;
+      document.getElementById('editModal').style.display = 'flex';
+    };
+    document.getElementById('saveEditBtn')?.addEventListener('click', () => {
+      if (editingTransId) {
+        const trans = transactions.find(t => t.id === editingTransId);
+        if (trans) {
+          trans.date = document.getElementById('editDate').value;
+          trans.cashier = document.getElementById('editCashier').value;
+          trans.bank = document.getElementById('editBank').value;
+          trans.currency = document.getElementById('editCurrency').value;
+          trans.action = document.getElementById('editAction').value;
+          trans.amount = parseNumber(document.getElementById('editAmount').value);
+          trans.quantity = parseInt(document.getElementById('editQuantity').value) || 1;
+          trans.commissionG = parseNumber(document.getElementById('editCommissionG').value);
+          trans.commissionUSD = parseNumber(document.getElementById('editCommissionUSD').value);
+          trans.bureau = document.getElementById('editBureau').value;
+          saveAllData();
+          refreshCaisseHistory();
+          refreshRapportTable();
+          performSearch();
+          showNotification("Transaction modifiée");
+        }
+      }
+      document.getElementById('editModal').style.display = 'none';
+      editingTransId = null;
+    });
+    document.getElementById('cancelEditBtn')?.addEventListener('click', () => {
+      document.getElementById('editModal').style.display = 'none';
+      editingTransId = null;
+    });
     
     // ==================== GESTION DE PRÊT ====================
     function refreshCreditorSelects() {
       const selects = ['loanCreditorSelect', 'paymentCreditorSelect', 'creditorStatementSelect'];
       selects.forEach(id => { const sel = document.getElementById(id); if(sel) { sel.innerHTML = '<option value="">-- Sélectionner --</option>'; creditors.forEach(c => { sel.innerHTML += `<option value="${c.id}">${c.code} - ${c.owner} (${c.company})</option>`; }); } });
+      refreshCreditorsList();
     }
+    
+    function refreshCreditorsList() {
+      const container = document.getElementById('creditorsListContainer');
+      if (!container) return;
+      const searchTerm = document.getElementById('searchCreditorInput')?.value.toLowerCase() || '';
+      let filtered = creditors;
+      if (searchTerm) {
+        filtered = creditors.filter(c => 
+          c.owner.toLowerCase().includes(searchTerm) || 
+          c.company.toLowerCase().includes(searchTerm)
+        );
+      }
+      if (filtered.length === 0) { container.innerHTML = '<p>Aucun créancier correspondant.</p>'; return; }
+      let html = '';
+      filtered.slice(0, 5).forEach(c => {
+        html += `<div class="creditor-list-item"><strong>${c.code}</strong> - ${c.owner} (${c.company}) <button class="btn btn-danger btn-small" onclick="deleteCreditor(${c.id})">Supprimer</button></div>`;
+      });
+      if (filtered.length > 5) {
+        html += `<div style="text-align:center; margin-top:8px; font-size:0.7rem;">+ ${filtered.length - 5} autre(s) créancier(s) (défiler pour voir plus)</div>`;
+      }
+      container.innerHTML = html;
+    }
+    
+    window.deleteCreditor = function(id) {
+      if (confirm("Supprimer ce créancier ainsi que tous ses prêts et remboursements ?")) {
+        creditors = creditors.filter(c => c.id !== id);
+        creditorLoans = creditorLoans.filter(l => l.creditorId !== id);
+        creditorPayments = creditorPayments.filter(p => !creditorLoans.some(l => l.id === p.loanId));
+        saveAllData();
+        refreshCreditorSelects();
+        refreshStatement();
+        showNotification("Créancier supprimé");
+      }
+    };
+    
     function saveCreditor() {
       const date = document.getElementById('creditorDate').value;
       const company = document.getElementById('creditorCompany').value.trim();
@@ -555,6 +829,7 @@
       document.getElementById('creditorCompany').value = ''; document.getElementById('creditorOwner').value = ''; document.getElementById('creditorCode').value = ''; document.getElementById('creditorPhone').value = ''; document.getElementById('creditorAddress').value = '';
       showNotification("Créancier enregistré"); refreshStatement();
     }
+    
     function saveLoan() {
       const creditorId = parseInt(document.getElementById('loanCreditorSelect').value);
       if(!creditorId) { alert("Sélectionnez un créancier"); return; }
@@ -568,6 +843,7 @@
       document.getElementById('loanAmountNew').value = ''; document.getElementById('loanReasonNew').value = '';
       showNotification("Prêt enregistré"); refreshStatement();
     }
+    
     function savePayment() {
       const creditorId = parseInt(document.getElementById('paymentCreditorSelect').value);
       if(!creditorId) { alert("Sélectionnez un créancier"); return; }
@@ -586,6 +862,7 @@
       document.getElementById('paymentAmount').value = ''; document.getElementById('bankName').value = ''; document.getElementById('accountNumber').value = '';
       showNotification("Remboursement enregistré"); refreshStatement();
     }
+    
     function refreshStatement() {
       const creditorId = parseInt(document.getElementById('creditorStatementSelect').value);
       if(!creditorId) {
@@ -604,27 +881,183 @@
       const loansOfCred = creditorLoans.filter(l => l.creditorId === creditorId && l.currency === currency);
       const paymentsOfCred = creditorPayments.filter(p => loansOfCred.some(l => l.id === p.loanId));
       let entries = [];
-      loansOfCred.forEach(l => { entries.push({ date: l.date, type: 'loan', amount: l.amount }); });
-      paymentsOfCred.forEach(p => { entries.push({ date: p.date, type: 'payment', amount: p.amount }); });
+      loansOfCred.forEach(l => { entries.push({ date: l.date, type: 'loan', amount: l.amount, loanId: l.id }); });
+      paymentsOfCred.forEach(p => { entries.push({ date: p.date, type: 'payment', amount: p.amount, loanId: p.loanId }); });
       entries.sort((a,b) => new Date(a.date) - new Date(b.date));
       let balance = 0, idx = 1, html = '';
       for(let e of entries) {
-        if(e.type === 'loan') { balance += e.amount; html += `<tr><td>${idx++}</td><td>${e.date}</td><td>${formatNumber(e.amount)}</td><td>—</td><td>${formatNumber(balance)}</td></tr>`; }
-        else { balance -= e.amount; html += `<tr><td>${idx++}</td><td>${e.date}</td><td>—</td><td>${formatNumber(e.amount)}</td><td>${formatNumber(balance)}</td></tr>`; }
+        if(e.type === 'loan') { balance += e.amount; html += `<tr>
+          <td>${idx++}</div></td>
+          <td>${e.date}</div></td>
+          <td>${formatNumber(e.amount)}</div></td>
+          <td>—</div></td>
+          <td>${formatNumber(balance)}</div></tr>`;
+        } else { balance -= e.amount; html += `<tr>
+          <td>${idx++}</div></td>
+          <td>${e.date}</div></td>
+          <td>—</div></td>
+          <td>${formatNumber(e.amount)}</div></td>
+          <td>${formatNumber(balance)}</div></tr>`;
+        }
       }
       document.getElementById('statementTableBody').innerHTML = html;
     }
-    function editCreditor() { const creditorId = parseInt(document.getElementById('creditorStatementSelect').value); if(!creditorId) { alert("Sélectionnez un créancier"); return; } const creditor = creditors.find(c => c.id === creditorId); if(!creditor) return; openEditCreditorModal(creditorId); }
-    function openEditCreditorModal(creditorId) { /* modal simplifiée */ showNotification("Fonction de modification avancée disponible"); }
-    function printCreditor() { /* stub */ }
+    
+    function openEditCreditorModal(creditorId) {
+      const creditor = creditors.find(c => c.id === creditorId);
+      if (!creditor) return;
+      const loans = creditorLoans.filter(l => l.creditorId === creditorId);
+      
+      const modal = document.createElement('div');
+      modal.className = 'edit-modal-overlay';
+      modal.style.display = 'flex';
+      
+      let loansHtml = '';
+      loans.forEach((loan, loanIdx) => {
+        const payments = creditorPayments.filter(p => p.loanId === loan.id);
+        loansHtml += `<div style="border:1px solid #ccc; margin-bottom:16px; padding:12px; border-radius:12px;">
+          <h5>Prêt du ${loan.date} (devise: ${loan.currency})</h5>
+          <div class="form-group"><label>Montant du prêt</label><input type="text" class="edit-loan-amount number-input" data-loan-id="${loan.id}" value="${formatNumber(loan.amount)}" style="width:200px;"></div>
+          <label>Remboursements :</label>`;
+        payments.forEach((payment, payIdx) => {
+          loansHtml += `<div style="margin-left:15px; margin-top:6px;" class="payment-edit-row">
+            <span>${payment.date} : </span>
+            <input type="text" class="edit-payment-amount number-input" data-payment-id="${payment.id}" value="${formatNumber(payment.amount)}" style="width:120px;">
+            <button class="btn btn-danger btn-small delete-payment" data-payment-id="${payment.id}" style="margin-left:8px;">X</button>
+          </div>`;
+        });
+        loansHtml += `<button class="btn btn-outline btn-small add-payment" data-loan-id="${loan.id}" style="margin-top:8px;">+ Ajouter remboursement</button>
+        </div>`;
+      });
+      
+      modal.innerHTML = `
+        <div class="edit-modal-container" style="width:750px;">
+          <h3>Modifier le créancier</h3>
+          <div class="form-group"><label>Date</label><input type="date" id="editCredDate" value="${creditor.date}"></div>
+          <div class="form-group"><label>Entreprise</label><input id="editCredCompany" value="${creditor.company.replace(/"/g, '&quot;')}"></div>
+          <div class="form-group"><label>Propriétaire</label><input id="editCredOwner" value="${creditor.owner.replace(/"/g, '&quot;')}"></div>
+          <div class="form-group"><label>Code</label><input id="editCredCode" value="${creditor.code}"></div>
+          <div class="form-group"><label>Téléphone</label><input id="editCredPhone" value="${creditor.phone}"></div>
+          <div class="form-group"><label>Adresse</label><input id="editCredAddress" value="${creditor.address || ''}"></div>
+          <h4>Prêts et remboursements</h4>
+          <div id="editLoansList">${loansHtml}</div>
+          <div class="edit-modal-actions">
+            <button class="btn btn-outline" id="closeEditModal">Annuler</button>
+            <button class="btn btn-primary" id="saveEditCreditor">Enregistrer</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      modal.querySelectorAll('.edit-loan-amount, .edit-payment-amount').forEach(input => {
+        input.addEventListener('blur', function() { formatNumberInput(this); });
+      });
+      modal.querySelectorAll('.delete-payment').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const paymentId = parseInt(btn.getAttribute('data-payment-id'));
+          if (confirm("Supprimer ce remboursement ?")) {
+            creditorPayments = creditorPayments.filter(p => p.id !== paymentId);
+            modal.remove();
+            openEditCreditorModal(creditorId);
+            showNotification("Remboursement supprimé");
+          }
+        });
+      });
+      modal.querySelectorAll('.add-payment').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const loanId = parseInt(btn.getAttribute('data-loan-id'));
+          const today = getTodayDate();
+          const targetLoan = creditorLoans.find(l => l.id === loanId);
+          if (!targetLoan) return;
+          const newPayment = {
+            id: Date.now(),
+            loanId: loanId,
+            date: today,
+            amount: 0,
+            currency: targetLoan.currency,
+            method: 'cash',
+            bankName: '',
+            accountNumber: ''
+          };
+          creditorPayments.push(newPayment);
+          modal.remove();
+          openEditCreditorModal(creditorId);
+          showNotification("Nouveau remboursement ajouté (montant à modifier)");
+        });
+      });
+      
+      modal.querySelector('#closeEditModal').onclick = () => modal.remove();
+      modal.querySelector('#saveEditCreditor').onclick = () => {
+        creditor.date = modal.querySelector('#editCredDate').value;
+        creditor.company = modal.querySelector('#editCredCompany').value;
+        creditor.owner = modal.querySelector('#editCredOwner').value;
+        creditor.code = modal.querySelector('#editCredCode').value;
+        creditor.phone = modal.querySelector('#editCredPhone').value;
+        creditor.address = modal.querySelector('#editCredAddress').value;
+        
+        modal.querySelectorAll('.edit-loan-amount').forEach(input => {
+          const loanId = parseInt(input.getAttribute('data-loan-id'));
+          const newAmount = parseNumber(input.value);
+          const loan = creditorLoans.find(l => l.id === loanId);
+          if (loan && !isNaN(newAmount)) loan.amount = newAmount;
+        });
+        modal.querySelectorAll('.edit-payment-amount').forEach(input => {
+          const paymentId = parseInt(input.getAttribute('data-payment-id'));
+          const newAmount = parseNumber(input.value);
+          const payment = creditorPayments.find(p => p.id === paymentId);
+          if (payment && !isNaN(newAmount)) payment.amount = newAmount;
+        });
+        
+        saveAllData();
+        refreshCreditorSelects();
+        refreshStatement();
+        modal.remove();
+        showNotification("Modifications enregistrées");
+      };
+    }
+    
+    function printCreditor() {
+      const creditorId = parseInt(document.getElementById('creditorStatementSelect').value);
+      if(!creditorId) { alert("Sélectionnez un créancier"); return; }
+      const creditor = creditors.find(c => c.id === creditorId);
+      const currency = document.getElementById('statementCurrency').value;
+      const loans = creditorLoans.filter(l => l.creditorId === creditorId && l.currency === currency);
+      let html = `<html><head><title>Fiche Créancier - ${creditor.code}</title><style>body{font-family:sans-serif; padding:20px;} .signature-space{margin-top:50px; border-top:1px solid #000; padding-top:15px; text-align:center;}</style></head><body>
+        <h2>FICHE CRÉANCIER</h2>
+        <p><strong>Code:</strong> ${creditor.code}</p>
+        <p><strong>Entreprise:</strong> ${creditor.company}</p>
+        <p><strong>Propriétaire:</strong> ${creditor.owner}</p>
+        <p><strong>Téléphone:</strong> ${creditor.phone}</p>
+        <p><strong>Adresse:</strong> ${creditor.address || '—'}</p>
+        <h3>Historique des prêts (${currency})</h3>
+        <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
+        <tr><th>Date</th><th>Montant emprunté</th><th>Remboursé</th><th>Balance</th></tr>`;
+      loans.forEach(loan => {
+        const payments = creditorPayments.filter(p => p.loanId === loan.id);
+        let paid = payments.reduce((s,p)=>s+p.amount,0);
+        let balance = loan.amount - paid;
+        html += `<tr>
+          <td>${loan.date}</div></td>
+          <td>${formatNumber(loan.amount)}</div></td>
+          <td>${formatNumber(paid)}</div></td>
+          <td>${formatNumber(balance)}</div></tr>`;
+      });
+      html += `</div><div class="signature-space">Signature du responsable : _________________________</div></body></html>`;
+      const win = window.open();
+      win.document.write(html);
+      win.document.close();
+      win.print();
+    }
+    
     document.getElementById('paymentMethod')?.addEventListener('change', function() { document.getElementById('bankDetailsFields').style.display = this.value === 'transfer' ? 'block' : 'none'; });
     document.getElementById('creditorStatementSelect')?.addEventListener('change', refreshStatement);
     document.getElementById('statementCurrency')?.addEventListener('change', refreshStatement);
     document.getElementById('saveCreditorBtn')?.addEventListener('click', saveCreditor);
     document.getElementById('saveLoanBtn')?.addEventListener('click', saveLoan);
     document.getElementById('savePaymentBtn')?.addEventListener('click', savePayment);
-    document.getElementById('editCreditorBtn')?.addEventListener('click', editCreditor);
+    document.getElementById('editCreditorBtn')?.addEventListener('click', () => { const id = parseInt(document.getElementById('creditorStatementSelect').value); if(id) openEditCreditorModal(id); else alert("Sélectionnez un créancier"); });
     document.getElementById('printCreditorBtn')?.addEventListener('click', printCreditor);
+    document.getElementById('searchCreditorInput')?.addEventListener('input', refreshCreditorsList);
     
     // ==================== GRANDE CAISSE ====================
     function updateGrandeCaisseRaw(input) { let raw = parseNumber(input.value); input._rawValue = raw; updateGrandeCaisseCalculations(); }
@@ -643,7 +1076,17 @@
     window.removeAddedFund = (idx) => { addedFunds.splice(idx,1); renderAddedFunds(); saveAllData(); };
     document.getElementById('addAddedFundBtn')?.addEventListener('click', () => { addedFunds.push({id:Date.now(), provenance:"", montant:0, date:getTodayDate()}); renderAddedFunds(); });
     
-    function renderInterTransfers(){ let c=document.getElementById('interTransfersContainer'); if(!c)return; let h=''; interTransfers.forEach((t,i)=>{h+=`<div class="dynamic-list-row"><input placeholder="Provenance" value="${t.provenance||t.caissier||''}" onchange="updateInterTransfer(${i},'provenance',this.value)" style="flex:2;"><input type="text" placeholder="Montant" value="${formatNumber(t.montant||0)}" onchange="updateInterTransfer(${i},'montant',parseNumber(this.value))" onblur="formatGrandeCaisseInput(this)" style="flex:1;"><input type="date" value="${t.date||''}" onchange="updateInterTransfer(${i},'date',this.value)" style="flex:1;"><button class="btn btn-danger btn-small" onclick="removeInterTransfer(${i})">X</button></div>`;}); c.innerHTML=h; updateGrandeCaisseCalculations(); }
+    // Modification : remplacer "Provenance" par "Destinataire" dans les lignes de transfert de fonds
+    function renderInterTransfers(){ 
+      let c=document.getElementById('interTransfersContainer'); 
+      if(!c)return; 
+      let h=''; 
+      interTransfers.forEach((t,i)=>{
+        h+=`<div class="dynamic-list-row"><input placeholder="Destinataire" value="${t.provenance||t.caissier||''}" onchange="updateInterTransfer(${i},'provenance',this.value)" style="flex:2;"><input type="text" placeholder="Montant" value="${formatNumber(t.montant||0)}" onchange="updateInterTransfer(${i},'montant',parseNumber(this.value))" onblur="formatGrandeCaisseInput(this)" style="flex:1;"><input type="date" value="${t.date||''}" onchange="updateInterTransfer(${i},'date',this.value)" style="flex:1;"><button class="btn btn-danger btn-small" onclick="removeInterTransfer(${i})">X</button></div>`;
+      }); 
+      c.innerHTML=h; 
+      updateGrandeCaisseCalculations(); 
+    }
     window.updateInterTransfer=(i,f,v)=>{if(interTransfers[i]) interTransfers[i][f]=v; if(f==='montant') interTransfers[i].montant=v; renderInterTransfers(); saveAllData();};
     window.removeInterTransfer=i=>{interTransfers.splice(i,1); renderInterTransfers(); saveAllData();};
     document.getElementById('addInterTransferBtn')?.addEventListener('click',()=>{interTransfers.push({id:Date.now(),provenance:"",montant:0,date:getTodayDate()}); renderInterTransfers();});
@@ -674,7 +1117,7 @@
       let totalOther = acquisitions + bills + disbursements + withdrawn;
       let totalOutflow = payments + totalInter + totalOther;
       let totalPhysical = physicalCashiers.reduce((s,p)=>s+(parseNumber(p.montant)||0),0);
-      let fondFermeture = totalPhysical;
+      let fondFermeture = totalAvailable - totalOutflow;
       const symbol = grandeCaisseCurrentCurrency === "Gourde" ? "G" : "USD";
       document.getElementById('totalAddedDisplay').innerHTML = formatNumber(totalAdded) + ' ' + symbol;
       document.getElementById('totalAvailableDisplay').innerHTML = formatNumber(totalAvailable) + ' ' + symbol;
@@ -699,7 +1142,7 @@
       let totalOther = acquisitions+bills+disbursements+withdrawn;
       let totalOutflow = payments + totalInter + totalOther;
       let totalPhysical = physicalCashiers.reduce((s,p)=>s+(parseNumber(p.montant)||0),0);
-      let fondFermeture = totalPhysical;
+      let fondFermeture = totalAvailable - totalOutflow;
       dailyReports[date] = {
         date, bureau, currency, openingBalance: opening,
         addedFundsList: JSON.parse(JSON.stringify(addedFunds)),
@@ -707,7 +1150,7 @@
         physicalCashiersList: JSON.parse(JSON.stringify(physicalCashiers)),
         totalAdded, totalAvailable, payments, totalInter, totalOther, totalOutflow, totalPhysical, fondFermeture
       };
-      saveAllData(); refreshGrandeCaisseHistory(); showNotification("Rapport Grande Caisse enregistré !"); 
+      saveAllData(); refreshGrandeCaisseHistory(date); showNotification("Rapport Grande Caisse enregistré !"); 
     }
     
     function loadGrandeCaisseReportForDate(){ 
@@ -736,6 +1179,8 @@
       renderAddedFunds(); renderInterTransfers(); renderPhysicalCashiers(); 
       document.querySelectorAll('#grandeCaisseSection .number-input').forEach(inp => { inp._rawValue = parseNumber(inp.value); });
       updateGrandeCaisseCalculations(); 
+      // Rafraîchir l'historique uniquement pour cette date
+      refreshGrandeCaisseHistory(date);
     }
     
     function resetGrandeCaisseForm(){ 
@@ -754,51 +1199,86 @@
       renderAddedFunds(); renderInterTransfers(); renderPhysicalCashiers(); updateGrandeCaisseCalculations(); 
     }
     
-    // Historique SIMPLIFIÉ (seulement les lignes principales, sans détails de provenance/caissier)
-    function refreshGrandeCaisseHistory(){ 
-      let container = document.getElementById('grandeCaisseHistory'); 
-      if(!container) return;
-      let dates = Object.keys(dailyReports).sort().reverse(); 
-      if(!dates.length){ container.innerHTML = '<div>Aucun rapport enregistré</div>'; return; }
-      let html = '';
-      for(let d of dates){
-        let r = dailyReports[d];
-        let symbol = (r.currency === "Gourde") ? "G" : "USD";
-        let opening = r.openingBalance || 0;
-        let totalAdded = r.totalAdded || 0;
-        let totalAvailable = r.totalAvailable || (opening + totalAdded);
-        let payments = r.payments || 0;
-        let totalInter = r.totalInter || 0;
-        let totalOther = r.totalOther || 0;
-        let totalOutflow = r.totalOutflow || (payments + totalInter + totalOther);
-        let fondFermeture = (r.fondFermeture !== undefined) ? r.fondFermeture : (r.totalPhysical || 0);
-        
-        html += `<div class="rapport-journalier" style="background:white; border:1px solid #e2e8f0; margin-bottom:20px; padding:12px;">
-          <h4 style="margin-bottom: 12px;">📅 ${d} - ${r.bureau} (${symbol})</h4>
-          <div class="ligne-rapport"><strong>Montant Disponible debut /Journée</strong> <span>${formatNumber(opening)} ${symbol}</span></div>
-          <div class="ligne-rapport"><strong>Total Montant Ajoute de la Journée</strong> <span>${formatNumber(totalAdded)} ${symbol}</span></div>
-          <div class="ligne-rapport"><strong>FONDS DISPONIBLES/JOURNEE</strong> <strong><span class="highlight-amount">${formatNumber(totalAvailable)} ${symbol}</span></strong></div>
-          <div class="ligne-rapport"><strong>Paiement Transfer</strong> <span>${formatNumber(payments)} ${symbol}</span></div>
-          <div class="ligne-rapport"><strong>Transfer de fonds</strong> <span>${formatNumber(totalInter)} ${symbol}</span></div>
-          <div class="ligne-rapport"><strong>Autres Decaisements</strong> <span>${formatNumber(totalOther)} ${symbol}</span></div>
-          <div class="ligne-rapport" style="margin-top:8px; font-weight:800;"><strong>TOTAL - SORTIE DE FONDS</strong> <span class="highlight-amount">${formatNumber(totalOutflow)} ${symbol}</span></div>
-          <div class="ligne-rapport" style="margin-top:8px; font-weight:800;"><strong>BALANCE DE FERMETURE</strong> <span class="highlight-amount">${formatNumber(fondFermeture)} ${symbol}</span></div>
-          <div class="action-buttons-row" style="margin-top:12px;">
-            <button class="btn btn-outline btn-small print-history-item" data-date="${d}">Imprimer ce rapport</button>
-          </div>
-        </div>`;
+    // Modification : afficher uniquement le rapport de la date sélectionnée (ou un message si absent)
+    // Et ajouter la ligne "FONDS DISPONIBLES = TOTAL SORTIE DE FOND = BALANCE DE FERMETURE"
+    function refreshGrandeCaisseHistory(selectedDate = null) {
+      const container = document.getElementById('grandeCaisseHistory');
+      if (!container) return;
+      // Si aucune date n'est passée, on prend la valeur du champ date du rapport
+      const targetDate = selectedDate || document.getElementById('reportDateFunds').value;
+      if (!targetDate) {
+        container.innerHTML = '<div>Sélectionnez une date pour voir le rapport correspondant.</div>';
+        return;
       }
+      const report = dailyReports[targetDate];
+      if (!report) {
+        container.innerHTML = `<div>Aucun rapport enregistré pour le ${targetDate}. Enregistrez‑le pour qu’il apparaisse ici.</div>`;
+        return;
+      }
+      // Afficher une seule carte pour le rapport de cette date exacte
+      const symbol = report.currency === "Gourde" ? "G" : "USD";
+      let opening = report.openingBalance || 0;
+      let totalAdded = report.totalAdded || 0;
+      let totalAvailable = report.totalAvailable || (opening + totalAdded);
+      let payments = report.payments || 0;
+      let totalInter = report.totalInter || 0;
+      let totalOther = report.totalOther || 0;
+      let totalOutflow = report.totalOutflow || (payments + totalInter + totalOther);
+      let fondFermeture = (report.fondFermeture !== undefined) ? report.fondFermeture : (totalAvailable - totalOutflow);
+      
+      let detailsAdded = '', detailsInter = '', detailsPhysical = '';
+      if(report.addedFundsList && report.addedFundsList.length){
+        detailsAdded = '<h5>Détail des montants ajoutés :</h5><ul>' + report.addedFundsList.map(f => `<li>${f.provenance || 'Provenance'} : ${formatNumber(f.montant)} ${symbol}</li>`).join('') + '</ul>';
+      }
+      if(report.interTransfersList && report.interTransfersList.length){
+        detailsInter = '<h5>Détail des transferts de fonds :</h5><ul>' + report.interTransfersList.map(t => `<li>Destinataire : ${t.provenance || t.caissier || ''} | Montant : ${formatNumber(t.montant)} ${symbol}</li>`).join('') + '</ul>';
+      }
+      if(report.physicalCashiersList && report.physicalCashiersList.length){
+        detailsPhysical = '<h5>Détail des décomptes physiques :</h5><ul>' + report.physicalCashiersList.map(p => `<li>${p.nom || 'Caissier'} : ${formatNumber(p.montant)} ${symbol}</li>`).join('') + '</ul>';
+      }
+      
+      const egalite = `
+        <div class="egalite-row">
+          <strong>FONDS DISPONIBLES (${formatNumber(totalAvailable)} ${symbol}) = TOTAL SORTIE DE FOND (${formatNumber(totalOutflow)} ${symbol}) = BALANCE DE FERMETURE (${formatNumber(fondFermeture)} ${symbol})</strong>
+        </div>
+      `;
+      
+      const html = `
+        <div class="history-report-card">
+          <h4>📅 ${report.date} - ${report.bureau} (${symbol})</h4>
+          <div class="history-section-block">
+            <div class="ligne-rapport"><span>Montant Disponible debut /Journée</span><span>${formatNumber(opening)} ${symbol}</span></div>
+            <div class="ligne-rapport"><span>Total Montant Ajoute de la Journée</span><span>${formatNumber(totalAdded)} ${symbol}</span></div>
+            ${detailsAdded}
+            <div class="ligne-rapport total"><span>FONDS DISPONIBLES/JOURNEE</span><span class="highlight-amount">${formatNumber(totalAvailable)} ${symbol}</span></div>
+          </div>
+          <div class="history-section-block">
+            <div class="ligne-rapport"><span>Paiement Transfer</span><span>${formatNumber(payments)} ${symbol}</span></div>
+            <div class="ligne-rapport"><span>Transfert de fonds</span><span>${formatNumber(totalInter)} ${symbol}</span></div>
+            ${detailsInter}
+            <div class="ligne-rapport"><span>Autres Decaissements</span><span>${formatNumber(totalOther)} ${symbol}</span></div>
+            <div class="ligne-rapport total"><span>TOTAL - SORTIE DE FONDS</span><span class="highlight-amount">${formatNumber(totalOutflow)} ${symbol}</span></div>
+          </div>
+          <div class="history-section-block">
+            <div class="ligne-rapport total"><span>BALANCE DE FERMETURE</span><span class="highlight-amount">${formatNumber(fondFermeture)} ${symbol}</span></div>
+            ${detailsPhysical}
+          </div>
+          ${egalite}
+          <div style="margin-top:10px; text-align:right;">
+            <button class="btn btn-outline btn-small print-history-item" data-date="${report.date}">Imprimer ce rapport</button>
+          </div>
+        </div>
+      `;
       container.innerHTML = html;
       document.querySelectorAll('.print-history-item').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const date = btn.getAttribute('data-date');
-          const report = dailyReports[date];
-          if(report) printGrandeCaisseReport(report);
+          const rep = dailyReports[date];
+          if (rep) printGrandeCaisseReport(rep);
         });
       });
     }
     
-    // Impression avec tous les détails (provenance, caissier, listes)
     function printGrandeCaisseReport(r) {
       const symbol = r.currency === "Gourde" ? "G" : "USD";
       let opening = r.openingBalance || 0;
@@ -808,49 +1288,64 @@
       let totalInter = r.totalInter || 0;
       let totalOther = r.totalOther || 0;
       let totalOutflow = r.totalOutflow || (payments + totalInter + totalOther);
-      let fondFermeture = (r.fondFermeture !== undefined) ? r.fondFermeture : (r.totalPhysical || 0);
+      let fondFermeture = (r.fondFermeture !== undefined) ? r.fondFermeture : (totalAvailable - totalOutflow);
       
       let detailsAdded = '', detailsInter = '', detailsPhysical = '';
       if(r.addedFundsList && r.addedFundsList.length){
-        detailsAdded = '<h4>Détail des montants ajoutés (provenance) :</h4><ul>';
-        r.addedFundsList.forEach(f => { detailsAdded += `<li>${f.provenance || 'Provenance'} : ${formatNumber(f.montant)} ${symbol}</li>`; });
-        detailsAdded += '</ul>';
+        detailsAdded = '<h4>Détail des montants ajoutés (provenance) :</h4><ul>' + r.addedFundsList.map(f => `<li>${f.provenance || 'Provenance'} : ${formatNumber(f.montant)} ${symbol}</li>`).join('') + '</ul>';
       }
       if(r.interTransfersList && r.interTransfersList.length){
-        detailsInter = '<h4>Détail des transferts de fonds (provenance) :</h4><ul>';
-        r.interTransfersList.forEach(t => { detailsInter += `<li>${t.provenance || 'Provenance'} : ${formatNumber(t.montant)} ${symbol}</li>`; });
-        detailsInter += '</ul>';
+        detailsInter = '<h4>Détail des transferts de fonds (destinataire) :</h4><ul>' + r.interTransfersList.map(t => `<li>Destinataire : ${t.provenance || t.caissier || ''} | Montant : ${formatNumber(t.montant)} ${symbol}</li>`).join('') + '</ul>';
       }
       if(r.physicalCashiersList && r.physicalCashiersList.length){
-        detailsPhysical = '<h4>Détail des décomptes physiques (caissier) :</h4><ul>';
-        r.physicalCashiersList.forEach(p => { detailsPhysical += `<li>${p.nom || 'Caissier'} : ${formatNumber(p.montant)} ${symbol}</li>`; });
-        detailsPhysical += '</ul>';
+        detailsPhysical = '<h4>Détail des décomptes physiques (caissier) :</h4><ul>' + r.physicalCashiersList.map(p => `<li>${p.nom || 'Caissier'} : ${formatNumber(p.montant)} ${symbol}</li>`).join('') + '</ul>';
       }
+      
+      const egalitePrint = `
+        <div style="margin-top:20px; padding:10px; background:#e0f2fe; text-align:center; font-weight:bold;">
+          FONDS DISPONIBLES (${formatNumber(totalAvailable)} ${symbol}) = TOTAL SORTIE DE FOND (${formatNumber(totalOutflow)} ${symbol}) = BALANCE DE FERMETURE (${formatNumber(fondFermeture)} ${symbol})
+        </div>
+      `;
       
       const printWindow = window.open('', '_blank');
       printWindow.document.write(`<html><head><title>Rapport Grande Caisse - ${r.date}</title><style>
         body{font-family:Arial, sans-serif; padding:20px; margin:0;}
-        .line{display:flex; justify-content:space-between; margin-bottom:8px;}
-        .total{font-weight:bold; margin-top:15px; border-top:1px solid #333; padding-top:10px;}
-        .yellow-bg{background-color:#fef9c3; text-decoration:underline; display:inline-block; padding:2px 6px; border-radius:8px;}
+        .section-block { margin: 20px 0; padding: 15px; background: #f9fafb; border-radius: 12px; }
+        .line{display:flex; justify-content:space-between; margin-bottom:12px;}
+        .total{font-weight:bold; margin-top:15px; border-top:2px solid #333; padding-top:12px;}
+        .yellow-bg{background-color:#fef9c3; text-decoration:underline; display:inline-block; padding:4px 12px; border-radius:12px; font-weight:800;}
         ul{margin-left:20px;}
-        @media print{body{margin:0; padding:0;}}
+        .signature-space { margin-top: 40px; border-top: 1px solid #000; padding-top: 15px; text-align: center; }
+        @media print{body{margin:0; padding:0;}
       </style></head><body>
         <h1>Rapport Grande Caisse</h1>
         <p><strong>Date :</strong> ${r.date}</p>
         <p><strong>Bureau :</strong> ${r.bureau}</p>
         <p><strong>Devise :</strong> ${symbol}</p>
-        <div class="line"><span>Montant Disponible debut/Journée :</span><span>${formatNumber(opening)} ${symbol}</span></div>
-        <div class="line"><span>Total Montant Ajouté de la Journée :</span><span>${formatNumber(totalAdded)} ${symbol}</span></div>
-        ${detailsAdded}
-        <div class="line total"><span>FONDS DISPONIBLES/JOURNEE :</span><span class="yellow-bg">${formatNumber(totalAvailable)} ${symbol}</span></div>
-        <div class="line"><span>Paiement Transfer :</span><span>${formatNumber(payments)} ${symbol}</span></div>
-        <div class="line"><span>Transfert de fonds :</span><span>${formatNumber(totalInter)} ${symbol}</span></div>
-        ${detailsInter}
-        <div class="line"><span>Autres Decaisements :</span><span>${formatNumber(totalOther)} ${symbol}</span></div>
-        <div class="line total"><span>TOTAL - SORTIE DE FONDS :</span><span class="yellow-bg">${formatNumber(totalOutflow)} ${symbol}</span></div>
-        <div class="line total"><span>BALANCE DE FERMETURE :</span><span class="yellow-bg">${formatNumber(fondFermeture)} ${symbol}</span></div>
-        ${detailsPhysical}
+        
+        <div class="section-block">
+          <div class="line"><span>Montant Disponible debut /Journée :</span><span>${formatNumber(opening)} ${symbol}</span></div>
+          <div class="line"><span>Total Montant Ajouté de la Journée :</span><span>${formatNumber(totalAdded)} ${symbol}</span></div>
+          ${detailsAdded}
+          <div class="line total"><span>FONDS DISPONIBLES/JOURNEE :</span><span class="yellow-bg">${formatNumber(totalAvailable)} ${symbol}</span></div>
+        </div>
+        
+        <div class="section-block">
+          <div class="line"><span>Paiement Transfer :</span><span>${formatNumber(payments)} ${symbol}</span></div>
+          <div class="line"><span>Transfert de fonds :</span><span>${formatNumber(totalInter)} ${symbol}</span></div>
+          ${detailsInter}
+          <div class="line"><span>Autres Decaissements :</span><span>${formatNumber(totalOther)} ${symbol}</span></div>
+          <div class="line total"><span>TOTAL - SORTIE DE FONDS :</span><span class="yellow-bg">${formatNumber(totalOutflow)} ${symbol}</span></div>
+        </div>
+        
+        <div class="section-block">
+          <div class="line total"><span>BALANCE DE FERMETURE :</span><span class="yellow-bg">${formatNumber(fondFermeture)} ${symbol}</span></div>
+          ${detailsPhysical}
+        </div>
+        
+        ${egalitePrint}
+        
+        <div class="signature-space">Signature du responsable : _________________________</div>
       </body></html>`);
       printWindow.document.close();
       printWindow.print();
@@ -858,79 +1353,111 @@
     
     function printCurrentGrandeCaisse() {
       let date = document.getElementById('reportDateFunds').value;
-      let bureau = document.getElementById('bureauSelect').value;
-      let currency = grandeCaisseCurrentCurrency;
-      let symbol = currency === "Gourde" ? "G" : "USD";
-      let opening = parseNumber(document.getElementById('openingBalance').value);
-      let totalAdded = addedFunds.reduce((s,f)=>s+(parseNumber(f.montant)||0),0);
-      let totalAvailable = opening + totalAdded;
-      let unibank=parseNumber(document.getElementById('manualUnibank').value), western=parseNumber(document.getElementById('manualWestern').value), unitransfert=parseNumber(document.getElementById('manualUnitransfert').value), moneygram=parseNumber(document.getElementById('manualMoneygram').value), cam=parseNumber(document.getElementById('manualCam').value);
-      let payments = unibank+western+unitransfert+moneygram+cam;
-      let totalInter = interTransfers.reduce((s,t)=>s+(parseNumber(t.montant)||0),0);
-      let acquisitions=parseNumber(document.getElementById('otherAcquisitions').value), bills=parseNumber(document.getElementById('otherBills').value), disbursements=parseNumber(document.getElementById('otherDisbursements').value), withdrawn=parseNumber(document.getElementById('amountWithdrawn').value);
-      let totalOther = acquisitions+bills+disbursements+withdrawn;
-      let totalOutflow = payments + totalInter + totalOther;
-      let totalPhysical = physicalCashiers.reduce((s,p)=>s+(parseNumber(p.montant)||0),0);
-      let fondFermeture = totalPhysical;
-      
-      let detailsAdded = '', detailsInter = '', detailsPhysical = '';
-      if(addedFunds.length){
-        detailsAdded = '<h4>Détail des montants ajoutés (provenance) :</h4><ul>';
-        addedFunds.forEach(f => { detailsAdded += `<li>${f.provenance || 'Provenance'} : ${formatNumber(f.montant)} ${symbol}</li>`; });
-        detailsAdded += '</ul>';
-      }
-      if(interTransfers.length){
-        detailsInter = '<h4>Détail des transferts de fonds (provenance) :</h4><ul>';
-        interTransfers.forEach(t => { detailsInter += `<li>${t.provenance || 'Provenance'} : ${formatNumber(t.montant)} ${symbol}</li>`; });
-        detailsInter += '</ul>';
-      }
-      if(physicalCashiers.length){
-        detailsPhysical = '<h4>Détail des décomptes physiques (caissier) :</h4><ul>';
-        physicalCashiers.forEach(p => { detailsPhysical += `<li>${p.nom || 'Caissier'} : ${formatNumber(p.montant)} ${symbol}</li>`; });
-        detailsPhysical += '</ul>';
-      }
-      
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(`<html><head><title>Rapport Grande Caisse - ${date}</title><style>
-        body{font-family:Arial, sans-serif; padding:20px;}
-        .line{display:flex; justify-content:space-between; margin-bottom:8px;}
-        .total{font-weight:bold; margin-top:15px; border-top:1px solid #333; padding-top:10px;}
-        .yellow-bg{background-color:#fef9c3; text-decoration:underline; display:inline-block; padding:2px 6px; border-radius:8px;}
-        ul{margin-left:20px;}
-        @media print{body{margin:0; padding:20px;}}
-      </style></head><body>
-        <h1>Rapport Grande Caisse</h1>
-        <p><strong>Date :</strong> ${date}</p>
-        <p><strong>Bureau :</strong> ${bureau}</p>
-        <p><strong>Devise :</strong> ${symbol}</p>
-        <div class="line"><span>Montant Disponible debut/Journée :</span><span>${formatNumber(opening)} ${symbol}</span></div>
-        <div class="line"><span>Total Montant Ajouté de la Journée :</span><span>${formatNumber(totalAdded)} ${symbol}</span></div>
-        ${detailsAdded}
-        <div class="line total"><span>FONDS DISPONIBLES/JOURNEE :</span><span class="yellow-bg">${formatNumber(totalAvailable)} ${symbol}</span></div>
-        <div class="line"><span>Paiement Transfer :</span><span>${formatNumber(payments)} ${symbol}</span></div>
-        <div class="line"><span>Transfert de fonds :</span><span>${formatNumber(totalInter)} ${symbol}</span></div>
-        ${detailsInter}
-        <div class="line"><span>Autres Decaisements :</span><span>${formatNumber(totalOther)} ${symbol}</span></div>
-        <div class="line total"><span>TOTAL - SORTIE DE FONDS :</span><span class="yellow-bg">${formatNumber(totalOutflow)} ${symbol}</span></div>
-        <div class="line total"><span>BALANCE DE FERMETURE :</span><span class="yellow-bg">${formatNumber(fondFermeture)} ${symbol}</span></div>
-        ${detailsPhysical}
-      </body></html>`);
-      printWindow.document.close();
-      printWindow.print();
+      if (!date) { alert("Veuillez sélectionner une date."); return; }
+      let report = dailyReports[date];
+      if (!report) { alert("Aucun rapport enregistré pour cette date. Veuillez enregistrer d'abord."); return; }
+      printGrandeCaisseReport(report);
     }
     
     document.getElementById('printGrandeCaisseBtn')?.addEventListener('click', printCurrentGrandeCaisse);
     document.getElementById('grandeCaisseCurrency')?.addEventListener('change', function() { grandeCaisseCurrentCurrency = this.value; updateGrandeCaisseCalculations(); refreshGrandeCaisseHistory(); });
+    document.getElementById('saveGrandeCaisseBtn')?.addEventListener('click', saveGrandeCaisseReport);
+    document.getElementById('resetGrandeCaisseBtn')?.addEventListener('click', resetGrandeCaisseForm);
+    document.getElementById('reportDateFunds')?.addEventListener('change',()=>{loadGrandeCaisseReportForDate(); refreshGrandeCaisseHistory();});
     
-    // ==================== EXPORT / IMPORT ====================
-    function exportFullCSV(data, filename, headers, mapper){ let rows=[headers]; data.forEach(d=>rows.push(mapper(d))); const blob=new Blob(["\uFEFF"+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n')],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
-    function exportAllTransactions(){ exportFullCSV(transactions,'transactions_completes.csv',['Date','Caissier','Maison','Devise','Type','Montant','Quantité','Commission G','Commission USD','Bureau'],t=>[t.date,t.cashier,t.bank,t.currency,getActionLabel(t),formatRawNumber(t.amount),t.quantity||1,formatRawNumber(t.commissionG||0),formatRawNumber(t.commissionUSD||0),t.bureau||'—']); showNotification("Export complet!"); }
-    function exportReportFull(){ const data=transactions.map(t=>[t.date,getActionLabel(t),t.bank+' - '+t.cashier,formatRawNumber(t.amount),t.currency,formatRawNumber(t.commissionG||0),formatRawNumber(t.commissionUSD||0),t.bureau||'—']); exportFullCSV(transactions,'rapport_complet.csv',['Date','Type','Maison/Caissier','Montant','Devise','Commission G','Commission USD','Bureau'],(_,i)=>data[i]); showNotification("Export rapport complet!"); }
+    // ==================== EXPORT / IMPORT CSV & JSON ====================
+    function downloadCSV(filename, rows) {
+      const csvContent = "\uFEFF" + rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+    
+    document.getElementById('exportTransactionsCSV')?.addEventListener('click', () => {
+      const headers = ["Date","Caissier","Maison","Devise","Type","Montant","Quantité","Commission G","Commission USD","Bureau"];
+      const rows = transactions.map(t => [t.date, t.cashier, t.bank, t.currency, getActionLabel(t), t.amount, t.quantity||1, t.commissionG||0, t.commissionUSD||0, t.bureau||'']);
+      downloadCSV("transactions.csv", [headers, ...rows]);
+      showNotification("Export transactions CSV");
+    });
+    document.getElementById('exportCreditorsCSV')?.addEventListener('click', () => {
+      const headers = ["id","date","company","owner","code","phone","address"];
+      const rows = creditors.map(c => [c.id, c.date, c.company, c.owner, c.code, c.phone, c.address||'']);
+      downloadCSV("creditors.csv", [headers, ...rows]);
+      showNotification("Export créanciers CSV");
+    });
+    document.getElementById('exportLoansCSV')?.addEventListener('click', () => {
+      const headers = ["id","creditorId","date","amount","currency","reason"];
+      const rows = creditorLoans.map(l => [l.id, l.creditorId, l.date, l.amount, l.currency, l.reason||'']);
+      downloadCSV("loans.csv", [headers, ...rows]);
+      showNotification("Export prêts CSV");
+    });
+    document.getElementById('exportPaymentsCSV')?.addEventListener('click', () => {
+      const headers = ["id","loanId","date","amount","currency","method","bankName","accountNumber"];
+      const rows = creditorPayments.map(p => [p.id, p.loanId, p.date, p.amount, p.currency, p.method, p.bankName||'', p.accountNumber||'']);
+      downloadCSV("payments.csv", [headers, ...rows]);
+      showNotification("Export remboursements CSV");
+    });
+    document.getElementById('exportReportsCSV')?.addEventListener('click', () => {
+      const headers = ["date","bureau","currency","openingBalance","totalAdded","totalAvailable","payments","totalInter","totalOther","totalOutflow","fondFermeture"];
+      const rows = Object.values(dailyReports).map(r => [r.date, r.bureau, r.currency, r.openingBalance||0, r.totalAdded||0, r.totalAvailable||0, r.payments||0, r.totalInter||0, r.totalOther||0, r.totalOutflow||0, r.fondFermeture||0]);
+      downloadCSV("daily_reports.csv", [headers, ...rows]);
+      showNotification("Export rapports Grande Caisse CSV");
+    });
+    
+    document.getElementById('doImportTransactionsCSV')?.addEventListener('click', () => {
+      const fileInput = document.getElementById('importTransactionsCSV');
+      if (!fileInput.files.length) { alert("Sélectionnez un fichier CSV"); return; }
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+        if (lines.length < 2) { alert("Fichier vide ou invalide"); return; }
+        const newTransactions = [];
+        for (let i = 1; i < lines.length; i++) {
+          const parts = lines[i].split(',').map(p => p.replace(/^"|"$/g, '').trim());
+          if (parts.length < 10) continue;
+          const [date, cashier, bank, currency, type, amountStr, qtyStr, comGStr, comUSDStr, bureau] = parts;
+          const amount = parseFloat(amountStr) || 0;
+          if (amount <= 0) continue;
+          newTransactions.push({
+            id: Date.now() + i,
+            date, cashier, bank, currency,
+            action: (type === 'Payé' || type === 'transfert_paye') ? 'transfert_paye' : 'transfert_expedie',
+            amount, quantity: parseInt(qtyStr) || 1,
+            commissionG: parseFloat(comGStr) || 0,
+            commissionUSD: parseFloat(comUSDStr) || 0,
+            bureau: bureau || ''
+          });
+        }
+        if (newTransactions.length === 0) { alert("Aucune transaction valide trouvée"); return; }
+        transactions = newTransactions;
+        saveAllData();
+        refreshCaisseHistory();
+        refreshRapportTable();
+        performSearch();
+        showNotification(`${newTransactions.length} transactions importées`);
+        fileInput.value = '';
+      };
+      reader.readAsText(file, "UTF-8");
+    });
+    
     function exportFullDataToJSON() { const fullData = { transactions, creditors, creditorLoans, creditorPayments, dailyReports, interTransfers, physicalCashiers, addedFunds, adminPassword, caissePassword }; const dataStr = JSON.stringify(fullData, null, 2); const blob = new Blob([dataStr], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ats_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`; a.click(); URL.revokeObjectURL(a.href); showNotification("Données exportées avec succès!"); }
     function importFullDataFromJSON(file) { const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); transactions = data.transactions || []; creditors = data.creditors || []; creditorLoans = data.creditorLoans || []; creditorPayments = data.creditorPayments || []; dailyReports = data.dailyReports || {}; interTransfers = data.interTransfers || []; physicalCashiers = data.physicalCashiers || []; addedFunds = data.addedFunds || []; if(data.adminPassword) adminPassword = data.adminPassword; if(data.caissePassword) caissePassword = data.caissePassword; saveAllData(); updateUserPasswords(); refreshCaisseHistory(); refreshRapportTable(); performSearch(); refreshCreditorSelects(); refreshStatement(); if(document.getElementById('grandeCaisseSection')?.style.display !== 'none') { loadGrandeCaisseReportForDate(); refreshGrandeCaisseHistory(); } showNotification("Données importées avec succès!"); } catch(err) { showNotification("Erreur lors de l'importation", false); } }; reader.readAsText(file); }
+    document.getElementById('exportFullDataBtn')?.addEventListener('click', exportFullDataToJSON);
+    document.getElementById('importFullDataBtn')?.addEventListener('click', () => document.getElementById('importFileInput').click());
+    document.getElementById('importFileInput')?.addEventListener('change', (e) => { if(e.target.files.length) importFullDataFromJSON(e.target.files[0]); e.target.value = ''; });
     
     function updateAdminPassword(){ const np=document.getElementById('newAdminPass').value.trim(); if(!np){alert("Entrez mot de passe Admin");return;} adminPassword=np; saveAllData(); updateUserPasswords(); document.getElementById('newAdminPass').value=''; document.getElementById('passMsg').innerHTML='<span style="color:green;">✓ Mot de passe Admin mis à jour</span>'; setTimeout(()=>document.getElementById('passMsg').innerHTML='',3000); showNotification("Mot de passe Admin changé!"); }
     function updateCaissePassword(){ const np=document.getElementById('newCaissePass').value.trim(); if(!np){alert("Entrez mot de passe Caisse");return;} caissePassword=np; saveAllData(); updateUserPasswords(); document.getElementById('newCaissePass').value=''; document.getElementById('passMsg').innerHTML='<span style="color:green;">✓ Mot de passe Caisse mis à jour</span>'; setTimeout(()=>document.getElementById('passMsg').innerHTML='',3000); showNotification("Mot de passe Caisse changé!"); }
+    document.getElementById('updateAdminPassBtn')?.addEventListener('click', updateAdminPassword);
+    document.getElementById('updateCaissePassBtn')?.addEventListener('click', updateCaissePassword);
     
     function initNavigation() {
       const navs=document.querySelectorAll('.nav-item[data-page]'), secs=['caisse','recherche','pret','grandeCaisse','rapport','parametres'];
@@ -964,17 +1491,20 @@
     document.getElementById('saveTransactionBtn')?.addEventListener('click',addStandardTransaction);
     document.getElementById('saveUnibankTransactionBtn')?.addEventListener('click',saveUnibankTransaction);
     document.getElementById('applyFilterBtn')?.addEventListener('click',()=>{const s=document.getElementById('reportStart').value,e=document.getElementById('reportEnd').value; refreshRapportTable(s,e);});
-    document.getElementById('exportBtn')?.addEventListener('click',exportAllTransactions);
+    document.getElementById('exportBtn')?.addEventListener('click', () => { exportFullDataToJSON(); });
     document.getElementById('performSearchBtn')?.addEventListener('click',performSearch);
     document.getElementById('resetSearchBtn')?.addEventListener('click',()=>{document.getElementById('searchKeyword').value='';document.getElementById('searchStartDate').value='';document.getElementById('searchEndDate').value='';document.getElementById('searchBureauFilter').value='';performSearch();});
-    document.getElementById('exportSearchResultsBtn')?.addEventListener('click',exportReportFull);
-    document.getElementById('saveGrandeCaisseBtn')?.addEventListener('click',saveGrandeCaisseReport);
-    document.getElementById('resetGrandeCaisseBtn')?.addEventListener('click',resetGrandeCaisseForm);
-    document.getElementById('reportDateFunds')?.addEventListener('change',()=>{loadGrandeCaisseReportForDate(); refreshGrandeCaisseHistory();});
-    document.getElementById('exportReportBtn')?.addEventListener('click',exportReportFull);
-    document.getElementById('exportFullDataBtn')?.addEventListener('click', exportFullDataToJSON);
-    document.getElementById('importFullDataBtn')?.addEventListener('click', () => document.getElementById('importFileInput').click());
-    document.getElementById('importFileInput')?.addEventListener('change', (e) => { if(e.target.files.length) importFullDataFromJSON(e.target.files[0]); e.target.value = ''; });
+    document.getElementById('exportSearchResultsBtn')?.addEventListener('click', () => {
+      const headers = ["Date","Caissier","Maison","Devise","Type","Montant","Quantité","Commission G","Commission USD","Bureau"];
+      const rows = transactions.map(t => [t.date, t.cashier, t.bank, t.currency, getActionLabel(t), t.amount, t.quantity||1, t.commissionG||0, t.commissionUSD||0, t.bureau||'']);
+      downloadCSV("recherche_resultats.csv", [headers, ...rows]);
+    });
+    document.getElementById('exportReportBtn')?.addEventListener('click', () => {
+      const headers = ["Date","Caissier","Maison","Devise","Type","Montant","Quantité","Commission G","Commission USD","Bureau"];
+      const rows = transactions.map(t => [t.date, t.cashier, t.bank, t.currency, getActionLabel(t), t.amount, t.quantity||1, t.commissionG||0, t.commissionUSD||0, t.bureau||'']);
+      downloadCSV("rapport_complet.csv", [headers, ...rows]);
+    });
+    
     document.getElementById('prevDayCaisse')?.addEventListener('click',()=>{const d=new Date(currentCaisseDate); d.setDate(d.getDate()-1); currentCaisseDate=d.toISOString().split('T')[0]; refreshCaisseHistory();});
     document.getElementById('nextDayCaisse')?.addEventListener('click',()=>{const d=new Date(currentCaisseDate); d.setDate(d.getDate()+1); currentCaisseDate=d.toISOString().split('T')[0]; refreshCaisseHistory();});
     document.getElementById('resetDateCaisse')?.addEventListener('click',()=>{currentCaisseDate=getTodayDate(); refreshCaisseHistory();});
