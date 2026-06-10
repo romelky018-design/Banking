@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -322,7 +321,7 @@
     }
     .search-results-split {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 24px;
       margin-top: 20px;
     }
@@ -338,6 +337,30 @@
       color: var(--primary-dark);
       border-left: 3px solid var(--primary);
       padding-left: 12px;
+    }
+    /* Nouveau style pour le résumé à deux colonnes */
+    .stats-summary-row {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .stats-summary-col {
+      flex: 1;
+      background: rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 16px;
+      min-width: 200px;
+    }
+    .stats-summary-col h4 {
+      margin: 0 0 12px 0;
+      font-size: 1rem;
+      border-left: 3px solid white;
+      padding-left: 12px;
+    }
+    .stats-summary-col p {
+      margin: 8px 0;
+      font-size: 0.85rem;
     }
     @media print {
       .sidebar, .menu-toggle-btn, .overlay, .page-header button, .btn, .date-nav, .action-buttons-row, .edit-modal-overlay, .no-print { display: none !important; }
@@ -389,11 +412,12 @@
         </div>
 
         <!-- RECHERCHE -->
-        <div id="rechercheSection" class="page-section" style="display:none;"><div class="form-card"><h3>Recherche universelle</h3><div class="form-grid"><div class="form-group"><label>Mot-clé</label><input type="text" id="searchKeyword" placeholder="Nom, banque, téléphone..."></div><div class="form-group"><label>Date début</label><input type="date" id="searchStartDate" value=""></div><div class="form-group"><label>Date fin</label><input type="date" id="searchEndDate" value=""></div><div class="form-group"><label>BUREAU</label><select id="searchBureauFilter"><option value="">Tous</option><option value="Bureau central">Bureau central</option><option value="Bureau 4 chemins">Bureau 4 chemins</option></select></div></div><div style="display: flex; gap: 12px; flex-wrap: wrap;"><button class="btn btn-primary" id="performSearchBtn">Rechercher</button><button class="btn btn-outline" id="resetSearchBtn">Réinitialiser</button><button class="btn btn-outline" id="exportSearchResultsBtn">Exporter résultats</button></div></div>
-          <div class="form-card"><h3>RÉSULTATS DES TRANSACTIONS</h3><div id="searchSummary" class="search-stats" style="display:none;"></div>
+        <div id="rechercheSection" class="page-section" style="display:none;">
+          <div class="form-card"><h3>Recherche universelle</h3><div class="form-grid"><div class="form-group"><label>Mot-clé</label><input type="text" id="searchKeyword" placeholder="Nom, banque, téléphone..."></div><div class="form-group"><label>Date début</label><input type="date" id="searchStartDate" value=""></div><div class="form-group"><label>Date fin</label><input type="date" id="searchEndDate" value=""></div><div class="form-group"><label>BUREAU</label><select id="searchBureauFilter"><option value="">Tous</option><option value="Bureau central">Bureau central</option><option value="Bureau 4 chemins">Bureau 4 chemins</option></select></div></div><div style="display: flex; gap: 12px; flex-wrap: wrap;"><button class="btn btn-primary" id="performSearchBtn">Rechercher</button><button class="btn btn-outline" id="resetSearchBtn">Réinitialiser</button><button class="btn btn-outline" id="exportSearchResultsBtn">Exporter résultats</button></div></div>
+          <div class="form-card"><h3>RÉSULTATS DES TRANSACTIONS</h3>
+            <div id="searchSummary" class="search-stats" style="display:none;"></div>
             <div id="searchResultsSplit" class="search-results-split" style="display:none;">
-              <div class="search-column"><h4>🏦 Autres maisons de transfert</h4><div class="table-container"><table id="otherTransfersTable"><thead><tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Quantité</th><th>Commission G</th><th>Commission USD</th><th>Bureau</th><th>Actions</th></tr></thead><tbody id="otherTransfersBody"></tbody></table></div></div>
-              <div class="search-column"><h4>🏦 Unibank tt kote</h4><div class="table-container"><table id="unibankTable"><thead><tr><th>Date</th><th>Caissier</th><th>Devise</th><th>Type</th><th>Montant</th><th>Quantité</th><th>Commission G</th><th>Commission USD</th><th>Bureau</th><th>Actions</th></tr></thead><tbody id="unibankBody"></tbody></table></div></div>
+              <div class="search-column"><h4>🏦 Toutes les maisons de transfert</h4><div class="table-container"><table id="allTransfersTable"><thead><tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Quantité</th><th>Commission G</th><th>Commission USD</th><th>Bureau</th><th>Actions</th></tr></thead><tbody id="allTransfersBody"></tbody></table></div></div>
             </div>
           </div>
           <div id="editModal" class="edit-modal-overlay"><div class="edit-modal-container"><h3>Modifier la transaction</h3><div id="editFormFields"></div><div class="edit-modal-actions"><button class="btn btn-outline" id="cancelEditBtn">Annuler</button><button class="btn btn-primary" id="saveEditBtn">Enregistrer</button></div></div></div>
@@ -408,7 +432,7 @@
           <div class="form-card"><h3>FICHE D'UN CRÉANCIER</h3><div class="form-group"><label>Choisir un créancier</label><select id="creditorStatementSelect"></select></div><div id="creditorDetails" class="creditor-card"><h4>Informations</h4><p><strong>Code:</strong> <span id="detailCode">—</span></p><p><strong>Nom:</strong> <span id="detailName">—</span></p><p><strong>Entreprise:</strong> <span id="detailCompany">—</span></p><p><strong>Téléphone:</strong> <span id="detailPhone">—</span></p><p><strong>Adresse:</strong> <span id="detailAddress">—</span></p><div class="action-buttons-row"><button class="btn btn-outline btn-small" id="editCreditorBtn">Modifier</button><button class="btn btn-outline btn-small" id="printCreditorBtn">Imprimer la fiche</button></div></div><div style="margin-top:20px;"><div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;"><label>Devise :</label><select id="statementCurrency"><option value="HTG">HTG (Gourde)</option><option value="USD">USD</option></select></div><div class="table-container"><table class="loan-statement-table"><thead><tr><th>NO.</th><th>Date</th><th>Montant Emprunté</th><th>Montant remboursé</th><th>Balance</th></tr></thead><tbody id="statementTableBody"></tbody></table></div></div></div>
         </div>
 
-        <!-- GRANDE CAISSE (mise à jour avec la nouvelle formule et historique détaillé) -->
+        <!-- GRANDE CAISSE -->
         <div id="grandeCaisseSection" class="page-section" style="display:none;">
           <div class="form-card">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
@@ -651,7 +675,7 @@
       });
     }
     
-    // ==================== RECHERCHE ====================
+    // ==================== RECHERCHE (modifiée) ====================
     function performSearch() {
       const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
       const startDate = document.getElementById('searchStartDate').value;
@@ -662,69 +686,89 @@
       if (endDate) results = results.filter(t => t.date <= endDate);
       if (bureauFilter) results = results.filter(t => t.bureau === bureauFilter);
       if (keyword) results = results.filter(t => t.cashier.toLowerCase().includes(keyword) || t.bank.toLowerCase().includes(keyword) || (t.bureau && t.bureau.toLowerCase().includes(keyword)) || (t.currency && t.currency.toLowerCase().includes(keyword)));
-      const otherTransfers = results.filter(t => t.bank !== 'Unibank tt kote');
+      
+      // Séparer Unibank et autres pour les stats
       const unibankTrans = results.filter(t => t.bank === 'Unibank tt kote');
-      const otherBody = document.getElementById('otherTransfersBody');
-      const unibankBody = document.getElementById('unibankBody');
-      otherBody.innerHTML = ''; unibankBody.innerHTML = '';
-      if (otherTransfers.length === 0 && unibankTrans.length === 0) {
+      const otherTransfers = results.filter(t => t.bank !== 'Unibank tt kote');
+      
+      // Calculs pour "Autres maisons de transfert" (avec Payé/Expédié)
+      let otherIncoming = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
+      let otherOutgoing = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
+      otherTransfers.forEach(t => {
+        const isIncoming = (t.action === 'transfert_paye');
+        const isOutgoing = (t.action === 'transfert_expedie');
+        const qty = t.quantity || 1;
+        const amount = t.amount || 0;
+        const currency = t.currency === 'Gourde' ? 'Gourde' : 'USD';
+        if (isIncoming) { otherIncoming[currency].qty += qty; otherIncoming[currency].amount += amount; }
+        else if (isOutgoing) { otherOutgoing[currency].qty += qty; otherOutgoing[currency].amount += amount; }
+      });
+      
+      // Calculs pour Unibank (avec Dépôt/Retrait)
+      let unibankIncoming = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
+      let unibankOutgoing = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
+      unibankTrans.forEach(t => {
+        const isIncoming = (t.action === 'depot' || t.action === 'ouverture_compte' || t.action === 'souscription');
+        const isOutgoing = (t.action === 'retrait');
+        const qty = t.quantity || 1;
+        const amount = t.amount || 0;
+        const currency = t.currency === 'Gourde' ? 'Gourde' : 'USD';
+        if (isIncoming) { unibankIncoming[currency].qty += qty; unibankIncoming[currency].amount += amount; }
+        else if (isOutgoing) { unibankOutgoing[currency].qty += qty; unibankOutgoing[currency].amount += amount; }
+      });
+      
+      // Génération du résumé à deux colonnes
+      const summaryHtml = `
+        <div><strong>${results.length} transaction(s) trouvée(s)</strong></div>
+        <div class="stats-summary-row">
+          <div class="stats-summary-col">
+            <h4>🏢 Autres maisons de transfert</h4>
+            <p><strong>Transferts Payés (entrées) :</strong><br>
+            Gourde : Qté = ${otherIncoming.Gourde.qty} | Montant = ${formatNumber(otherIncoming.Gourde.amount)} G<br>
+            USD : Qté = ${otherIncoming.USD.qty} | Montant = ${formatNumber(otherIncoming.USD.amount)} USD</p>
+            <p><strong>Transferts Expédiés (sorties) :</strong><br>
+            Gourde : Qté = ${otherOutgoing.Gourde.qty} | Montant = ${formatNumber(otherOutgoing.Gourde.amount)} G<br>
+            USD : Qté = ${otherOutgoing.USD.qty} | Montant = ${formatNumber(otherOutgoing.USD.amount)} USD</p>
+          </div>
+          <div class="stats-summary-col">
+            <h4>🏦 Unibank tt kote</h4>
+            <p><strong>Dépôts (entrées) :</strong><br>
+            Gourde : Qté = ${unibankIncoming.Gourde.qty} | Montant = ${formatNumber(unibankIncoming.Gourde.amount)} G<br>
+            USD : Qté = ${unibankIncoming.USD.qty} | Montant = ${formatNumber(unibankIncoming.USD.amount)} USD</p>
+            <p><strong>Retraits (sorties) :</strong><br>
+            Gourde : Qté = ${unibankOutgoing.Gourde.qty} | Montant = ${formatNumber(unibankOutgoing.Gourde.amount)} G<br>
+            USD : Qté = ${unibankOutgoing.USD.qty} | Montant = ${formatNumber(unibankOutgoing.USD.amount)} USD</p>
+          </div>
+        </div>
+      `;
+      
+      // Affichage du tableau unique avec toutes les transactions
+      const allBody = document.getElementById('allTransfersBody');
+      allBody.innerHTML = '';
+      if (results.length === 0) {
         document.getElementById('searchSummary').style.display = 'none';
         document.getElementById('searchResultsSplit').style.display = 'none';
         return;
       }
-      otherTransfers.forEach(t => { otherBody.innerHTML += `<tr>
-          <td>${t.date}</td>
-          <td>${t.cashier}</td>
-          <td>${t.bank}</td>
-          <td>${t.currency}</td>
-          <td>${getActionLabel(t)}</td>
-          <td>${formatNumber(t.amount)}</td>
-          <td>${t.quantity || 1}</td>
-          <td>${formatNumber(t.commissionG||0)} G</td>
-          <td>${formatNumber(t.commissionUSD||0)} USD</td>
-          <td>${t.bureau||'—'}</td>
-          <td><button class="btn btn-small btn-outline" onclick="editTransaction(${t.id})">Modifier</button></td>
-        `; });
-      unibankTrans.forEach(t => { unibankBody.innerHTML += `<tr>
-          <td>${t.date}</td>
-          <td>${t.cashier}</td>
-          <td>${t.currency}</td>
-          <td>${getActionLabel(t)}</td>
-          <td>${formatNumber(t.amount)}</td>
-          <td>${t.quantity || 1}</td>
-          <td>${formatNumber(t.commissionG||0)} G</td>
-          <td>${formatNumber(t.commissionUSD||0)} USD</td>
-          <td>${t.bureau||'—'}</td>
-          <td><button class="btn btn-small btn-outline" onclick="editTransaction(${t.id})">Modifier</button></td>
-        `; });
-      let incoming = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
-      let outgoing = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
       results.forEach(t => {
-        const isUnibank = t.bank === 'Unibank tt kote';
-        let isIncoming = false, isOutgoing = false;
-        if (isUnibank) {
-          if (t.action === 'depot' || t.action === 'ouverture_compte' || t.action === 'souscription') isIncoming = true;
-          else if (t.action === 'retrait') isOutgoing = true;
-        } else {
-          if (t.action === 'transfert_paye') isIncoming = true;
-          else if (t.action === 'transfert_expedie') isOutgoing = true;
-        }
-        const qty = t.quantity || 1;
-        const amount = t.amount || 0;
-        const currency = t.currency === 'Gourde' ? 'Gourde' : 'USD';
-        if (isIncoming) { incoming[currency].qty += qty; incoming[currency].amount += amount; }
-        else if (isOutgoing) { outgoing[currency].qty += qty; outgoing[currency].amount += amount; }
+        allBody.innerHTML += `<tr>
+          <td>${t.date}</div></td>
+          <td>${t.cashier}</div></td>
+          <td>${t.bank}</div></td>
+          <td>${t.currency}</div></td>
+          <td>${getActionLabel(t)}</div></td>
+          <td>${formatNumber(t.amount)}</div></td>
+          <td>${t.quantity || 1}</div></td>
+          <td>${formatNumber(t.commissionG||0)} G</div></td>
+          <td>${formatNumber(t.commissionUSD||0)} USD</div></td>
+          <td>${t.bureau||'—'}</div></td>
+          <td><button class="btn btn-small btn-outline" onclick="editTransaction(${t.id})">Modifier</button></div></tr>
+        `;
       });
-      const summaryHtml = `<div><strong>${results.length} transaction(s) trouvée(s)</strong></div>
-        <div style="margin-top:10px;"><strong>Transferts Payés / Dépôts (entrées)</strong></div>
-        <div>Gourdes : Quantité = ${incoming.Gourde.qty} | Montant total = ${formatNumber(incoming.Gourde.amount)} G</div>
-        <div>USD : Quantité = ${incoming.USD.qty} | Montant total = ${formatNumber(incoming.USD.amount)} USD</div>
-        <div style="margin-top:10px;"><strong>Transferts Expédiés / Retraits (sorties)</strong></div>
-        <div>Gourdes : Quantité = ${outgoing.Gourde.qty} | Montant total = ${formatNumber(outgoing.Gourde.amount)} G</div>
-        <div>USD : Quantité = ${outgoing.USD.qty} | Montant total = ${formatNumber(outgoing.USD.amount)} USD</div>`;
+      
       document.getElementById('searchSummary').style.display = 'block';
       document.getElementById('searchSummary').innerHTML = summaryHtml;
-      document.getElementById('searchResultsSplit').style.display = 'grid';
+      document.getElementById('searchResultsSplit').style.display = 'block';
     }
     
     window.editTransaction = function(id) {
@@ -869,16 +913,16 @@
         if(e.type === 'loan') { balance += e.amount; html += `<tr>
           <td>${idx++}</td>
           <td>${e.date}</td>
-          <td>${formatNumber(e.amount)}</td>
-          <td>—</td>
-          <td>${formatNumber(balance)}</td>
-        `; } else { balance -= e.amount; html += `<tr>
-          <td>${idx++}</td>
-          <td>${e.date}</td>
-          <td>—</td>
-          <td>${formatNumber(e.amount)}</td>
-          <td>${formatNumber(balance)}</td>
-        `; }
+          <td>${formatNumber(e.amount)}</div></td>
+          <td>—</div></td>
+          <td>${formatNumber(balance)}</div></tr>`;
+        } else { balance -= e.amount; html += `<tr>
+          <td>${idx++}</div></td>
+          <td>${e.date}</div></td>
+          <td>—</div></td>
+          <td>${formatNumber(e.amount)}</div></td>
+          <td>${formatNumber(balance)}</div></tr>`;
+        }
       }
       document.getElementById('statementTableBody').innerHTML = html;
     }
@@ -953,19 +997,18 @@
         <p><strong>Téléphone:</strong> ${creditor.phone}</p>
         <p><strong>Adresse:</strong> ${creditor.address || '—'}</p>
         <h3>Historique des prêts (${currency})</h3>
-        <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;"><tr><th>Date</th><th>Montant emprunté</th><th>Remboursé</th><th>Balance</th></tr>`;
+        <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;"><tr><th>Date</th><th>Montant emprunté</th><th>Remboursé</th><th>Balance</th></table>`;
       loans.forEach(loan => {
         const payments = creditorPayments.filter(p => p.loanId === loan.id);
         let paid = payments.reduce((s,p)=>s+p.amount,0);
         let balance = loan.amount - paid;
         html += `<tr>
           <td>${loan.date}</td>
-          <td>${formatNumber(loan.amount)}</td>
-          <td>${formatNumber(paid)}</td>
-          <td>${formatNumber(balance)}</td>
-        `;
+          <td>${formatNumber(loan.amount)}</div></td>
+          <td>${formatNumber(paid)}</div></td>
+          <td>${formatNumber(balance)}</div></tr>`;
       });
-      html += `</table><div class="signature-space">Signature du responsable : _________________________</div></body></html>`;
+      html += `</div><div class="signature-space">Signature du responsable : _________________________</div></body></html>`;
       printContent(html);
     }
     
@@ -1121,7 +1164,6 @@
       renderAddedFunds(); renderExpeditedFunds(); renderInterTransfers(); renderPhysicalCashiers(); updateGrandeCaisseCalculations(); 
     }
     
-    // Historique simplifié (comme dans l'image)
     function refreshGrandeCaisseHistory() {
       const container = document.getElementById('grandeCaisseHistory');
       if (!container) return;
@@ -1146,7 +1188,6 @@
       let totalOutflow = r.totalOutflow || (payments + totalInter + totalOther);
       let fondFermeture = (r.fondFermeture !== undefined) ? r.fondFermeture : (totalAvailable - totalOutflow);
       
-      // Construction simplifiée sans détails
       const html = `
         <div class="history-report-card">
           <h4>📅 ${r.date} - ${r.bureau} (${symbol})</h4>
@@ -1178,7 +1219,6 @@
       });
     }
     
-    // Impression simplifiée également
     function printGrandeCaisseReport(r) {
       const symbol = r.currency === "Gourde" ? "G" : "USD";
       let opening = r.openingBalance || 0;
@@ -1407,4 +1447,4 @@
     }
   </script>
 </body>
-  </html>
+</html>
