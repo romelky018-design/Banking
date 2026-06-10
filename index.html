@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>ATS - Système de Gestion Financière</title>
   <style>
-    /* Vos styles existants - inchangés */
+    /* ========== STYLES (identiques à la version précédente) ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --bg: #f5f7fc; --card: #ffffff; --text: #1a2c3e; --text-light: #5b6e8c;
@@ -371,18 +371,6 @@
       .signature-space { margin-top: 40px; border-top: 1px solid #000; padding-top: 10px; text-align: center; }
     }
     .signature-space { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 15px; text-align: center; font-style: italic; }
-    .print-creditor-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    .print-creditor-table th, .print-creditor-table td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: top; }
-    .print-creditor-table th { background-color: #f2f2f2; font-weight: bold; }
-    .print-creditor-table td.amount { text-align: right; font-family: monospace; }
-    .print-header { margin-bottom: 20px; }
-    .print-section { margin-bottom: 30px; }
-    .print-subsection { margin-bottom: 20px; }
-    .print-subsection h4 { border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
-    .print-detail-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    .print-detail-table th, .print-detail-table td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    .print-detail-table th { background: #f0f0f0; }
-    .print-detail-table td.amount { text-align: right; }
   </style>
 </head>
 <body>
@@ -546,38 +534,28 @@
     function formatRawNumber(num) { if (isNaN(num)) num = 0; return num.toFixed(2); }
     function showNotification(msg, success=true) { const n = document.createElement('div'); n.className = 'toast-notification'; n.style.background = success ? '#059669' : '#dc2626'; n.innerText = msg; document.body.appendChild(n); setTimeout(() => n.remove(), 2500); }
     
-    // Impression sans popup - utilisation d'un iframe invisible
+    // Impression sans popup (iframe)
     function printContent(htmlContent) {
-      // Crée un iframe invisible
       const iframe = document.createElement('iframe');
       iframe.style.position = 'absolute';
       iframe.style.width = '0';
       iframe.style.height = '0';
       iframe.style.border = 'none';
       document.body.appendChild(iframe);
-      
       const iframeDoc = iframe.contentWindow.document;
       iframeDoc.open();
       iframeDoc.write(htmlContent);
       iframeDoc.close();
-      
-      // Attendre le chargement, puis lancer l'impression
       iframe.onload = function() {
         iframe.contentWindow.focus();
         iframe.contentWindow.print();
-        // Retirer l'iframe après impression (délai pour éviter la fermeture prématurée)
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-        }, 1000);
+        setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 1000);
       };
-      // Si l'événement onload ne se déclenche pas, forcer l'impression après un court délai
       setTimeout(() => {
         if (iframe.contentWindow) {
           iframe.contentWindow.focus();
           iframe.contentWindow.print();
-          setTimeout(() => {
-            if (document.body.contains(iframe)) document.body.removeChild(iframe);
-          }, 1000);
+          setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 1000);
         }
       }, 500);
     }
@@ -606,7 +584,17 @@
     function updateUserPasswords() { VALID_USERS.admin.password = adminPassword; VALID_USERS.caisse.password = caissePassword; }
     
     function hasAccess(page) { if (!currentUser) return false; if (currentUser.role === 'admin') return true; return ['caisse', 'grandeCaisse'].includes(page); }
-    function updateNavigationAccess() { ['navRecherche','navPret','navRapport','navParametres'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display = hasAccess(id.replace('nav','').toLowerCase()) ? 'flex' : 'none'; }); }
+    function updateNavigationAccess() { 
+      ['navRecherche','navPret','navRapport','navParametres'].forEach(id => { 
+        const el = document.getElementById(id); 
+        if(el) el.style.display = hasAccess(id.replace('nav','').toLowerCase()) ? 'flex' : 'none'; 
+      });
+      // Si l'utilisateur est limité, on force l'affichage de la caisse
+      if (currentUser && currentUser.role === 'limited_caisse') {
+        document.getElementById('caisseSection').style.display = 'block';
+        document.getElementById('pageTitle').innerText = 'Caisse';
+      }
+    }
     
     function saveAllData() {
       const fullData = { transactions, creditors, creditorLoans, creditorPayments, dailyReports, interTransfers, physicalCashiers, addedFunds, expeditedFunds, adminPassword, caissePassword };
@@ -640,7 +628,7 @@
           if(data.adminPassword) adminPassword = data.adminPassword;
           if(data.caissePassword) caissePassword = data.caissePassword;
           saveAllData();
-        } catch(e) {}
+        } catch(e) { console.error("Erreur chargement données", e); }
       } else {
         const st = localStorage.getItem('pro_finance_transactions_main'); if(st) transactions = JSON.parse(st);
         const cr = localStorage.getItem('pro_creditors'); if(cr) creditors = JSON.parse(cr);
@@ -866,8 +854,7 @@
       let filtered = creditors.filter(c => searchTerm ? (c.owner.toLowerCase().includes(searchTerm) || c.company.toLowerCase().includes(searchTerm)) : true);
       if (filtered.length === 0) { container.innerHTML = '<p>Aucun créancier correspondant.</p>'; return; }
       let html = '';
-      filtered.slice(0, 5).forEach(c => { html += `<div class="creditor-list-item"><strong>${c.code}</strong> - ${c.owner} (${c.company}) <button class="btn btn-danger btn-small" onclick="deleteCreditor(${c.id})">Supprimer</button></div>`; });
-      if (filtered.length > 5) html += `<div style="text-align:center; margin-top:8px; font-size:0.7rem;">+ ${filtered.length - 5} autre(s) créancier(s) (défiler pour voir plus)</div>`;
+      filtered.forEach(c => { html += `<div class="creditor-list-item"><strong>${c.code}</strong> - ${c.owner} (${c.company}) <button class="btn btn-danger btn-small" onclick="deleteCreditor(${c.id})">Supprimer</button></div>`; });
       container.innerHTML = html;
     }
     window.deleteCreditor = function(id) {
@@ -1022,7 +1009,7 @@
       };
     }
     
-    // Impression et téléchargement fiche créancier
+    // Impression fiche créancier
     function getCreditorPrintHtml() {
       const creditorId = parseInt(document.getElementById('creditorStatementSelect').value);
       if(!creditorId) { alert("Sélectionnez un créancier"); return null; }
@@ -1245,7 +1232,7 @@
       renderAddedFunds(); renderExpeditedFunds(); renderInterTransfers(); renderPhysicalCashiers(); updateGrandeCaisseCalculations(); 
     }
     
-    // Impression détaillée ligne par ligne
+    // Impression détaillée Grande Caisse (ligne par ligne)
     function getGrandeCaissePrintHtml(report) {
       const symbol = report.currency === "Gourde" ? "G" : "USD";
       let opening = report.openingBalance || 0;
@@ -1287,7 +1274,11 @@
         <div class="section">
           <h2>FONDS DISPONIBLE</h2>
           <div class="row"><span>Montant Disponible début de journée :</span><span class="amount">${formatNumber(opening)} ${symbol}</span></div>
+          <h3>📌 Détail des Montants Ajoutés</h3>
+          ${addedDetails.length ? `<table><thead><tr><th>Provenance</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${addedDetails.map(a => `<tr><td>${a.provenance || '—'}</td><td>${a.date || '—'}</td><td class="amount">${formatNumber(a.montant)}</div></tr>`).join('')}</tbody></table>` : '<div>Aucun montant ajouté.</div>'}
           <div class="row"><span>Total Montants Ajoutés :</span><span class="amount">${formatNumber(totalAdded)} ${symbol}</span></div>
+          <h3>📌 Détail des Montants Expédiés</h3>
+          ${expeditedDetails.length ? `<table><thead><tr><th>Provenance</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${expeditedDetails.map(e => `<td>${e.provenance || '—'}</td><td>${e.date || '—'}</td><td class="amount">${formatNumber(e.montant)}</div></tr>`).join('')}</tbody></table>` : '<div>Aucun montant expédié.</div>'}
           <div class="row"><span>Total Montants Expédiés :</span><span class="amount">${formatNumber(totalExpedited)} ${symbol}</span></div>
           <div class="row total"><span>FONDS DISPONIBLES / JOURNÉE :</span><span class="amount highlight">${formatNumber(totalAvailable)} ${symbol}</span></div>
         </div>
@@ -1303,7 +1294,7 @@
           <div class="row total"><span>TOTAL PAIEMENT TRANSFERT :</span><span class="amount">${formatNumber(paymentsTotal)} ${symbol}</span></div>
           
           <h3>📌 Transfert de fonds</h3>
-          ${interDetails.length ? `<table><thead><tr><th>Destinataire</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${interDetails.map(i => `<tr><td>${i.provenance || '—'}</td><td>${i.date || '—'}</td><td class="amount">${formatNumber(i.montant)}</div></tr>`).join('')}</tbody></table>` : '<div>Aucun transfert de fonds enregistré.</div>'}
+          ${interDetails.length ? `<table><thead><tr><th>Destinataire</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${interDetails.map(i => `<tr><td>${i.provenance || i.caissier || '—'}</td><td>${i.date || '—'}</td><td class="amount">${formatNumber(i.montant)}</div></tr>`).join('')}</tbody></table>` : '<div>Aucun transfert de fonds.</div>'}
           <div class="row total"><span>TOTAL TRANSFERT DE FONDS :</span><span class="amount">${formatNumber(totalInter)} ${symbol}</span></div>
           
           <h3>📌 Autres Décaissements</h3>
@@ -1318,7 +1309,7 @@
         
         <div class="section">
           <h2>DÉCOMPTES PHYSIQUES</h2>
-          ${physicalDetails.length ? `<td><thead><tr><th>Caissier</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${physicalDetails.map(p => `<tr><td>${p.nom || '—'}</td><td>${p.date || '—'}</td><td class="amount">${formatNumber(p.montant)}</div></tr>`).join('')}</tbody></tr>` : '<div>Aucun décompte physique enregistré.</div>'}
+          ${physicalDetails.length ? `<table><thead><tr><th>Caissier</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${physicalDetails.map(p => `<tr><td>${p.nom || '—'}</td><td>${p.date || '—'}</td><td class="amount">${formatNumber(p.montant)}</div></tr>`).join('')}</tbody></table>` : '<div>Aucun décompte physique.</div>'}
           <div class="row total"><span>TOTAL DÉCOMPTES PHYSIQUES :</span><span class="amount">${formatNumber(report.totalPhysical || 0)} ${symbol}</span></div>
         </div>
         
@@ -1421,14 +1412,11 @@
     function downloadCSV(filename, rows) {
       const csvContent = "\uFEFF" + rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.href = url;
-      link.setAttribute("download", filename);
-      document.body.appendChild(link);
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
       link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(link.href);
     }
     
     document.getElementById('exportTransactionsCSV')?.addEventListener('click', () => {
@@ -1506,18 +1494,50 @@
     document.getElementById('importFullDataBtn')?.addEventListener('click', () => document.getElementById('importFileInput').click());
     document.getElementById('importFileInput')?.addEventListener('change', (e) => { if(e.target.files.length) importFullDataFromJSON(e.target.files[0]); e.target.value = ''; });
     
+    // Mise à jour des mots de passe
     function updateAdminPassword(){ const np=document.getElementById('newAdminPass').value.trim(); if(!np){alert("Entrez mot de passe Admin");return;} adminPassword=np; saveAllData(); updateUserPasswords(); document.getElementById('newAdminPass').value=''; document.getElementById('passMsg').innerHTML='<span style="color:green;">✓ Mot de passe Admin mis à jour</span>'; setTimeout(()=>document.getElementById('passMsg').innerHTML='',3000); showNotification("Mot de passe Admin changé!"); }
     function updateCaissePassword(){ const np=document.getElementById('newCaissePass').value.trim(); if(!np){alert("Entrez mot de passe Caisse");return;} caissePassword=np; saveAllData(); updateUserPasswords(); document.getElementById('newCaissePass').value=''; document.getElementById('passMsg').innerHTML='<span style="color:green;">✓ Mot de passe Caisse mis à jour</span>'; setTimeout(()=>document.getElementById('passMsg').innerHTML='',3000); showNotification("Mot de passe Caisse changé!"); }
     document.getElementById('updateAdminPassBtn')?.addEventListener('click', updateAdminPassword);
     document.getElementById('updateCaissePassBtn')?.addEventListener('click', updateCaissePassword);
     
+    // Navigation
     function initNavigation() {
-      const navs=document.querySelectorAll('.nav-item[data-page]'), secs=['caisse','recherche','pret','grandeCaisse','rapport','parametres'];
-      navs.forEach(n=>{n.addEventListener('click',()=>{const p=n.getAttribute('data-page'); if(!hasAccess(p)){alert("Accès non autorisé");return;} secs.forEach(s=>{const el=document.getElementById(s+'Section'); if(el) el.style.display=s===p?'block':'none';}); navs.forEach(nav=>nav.classList.remove('active')); n.classList.add('active'); const titles={caisse:'Caisse',recherche:'Recherche',pret:'Gestion de Prêt',grandeCaisse:'Grande Caisse',rapport:'Rapport & Comptabilité',parametres:'Paramètres'}; document.getElementById('pageTitle').innerText=titles[p]; if(p==='rapport') refreshRapportTable(); if(p==='caisse'){ refreshCaisseHistory(); toggleBankInterface(); } if(p==='pret'){ refreshCreditorSelects(); refreshStatement(); } if(p==='recherche') performSearch(); if(p==='grandeCaisse'){ loadGrandeCaisseReportForDate(); refreshGrandeCaisseHistory(); } if(window.innerWidth<=1000){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); }});});}
-    function toggleBankInterface() { const bank = document.getElementById('bankSelect').value; document.getElementById('standardInterface').style.display = bank === 'Unibank tt kote' ? 'none' : 'block'; document.getElementById('unibankInterface').style.display = bank === 'Unibank tt kote' ? 'block' : 'none'; }
+      const navs = document.querySelectorAll('.nav-item[data-page]');
+      const secs = ['caisse','recherche','pret','grandeCaisse','rapport','parametres'];
+      navs.forEach(nav => {
+        nav.addEventListener('click', (e) => {
+          const page = nav.getAttribute('data-page');
+          if (!hasAccess(page)) { alert("Accès non autorisé"); return; }
+          secs.forEach(s => {
+            const el = document.getElementById(s+'Section');
+            if (el) el.style.display = (s === page) ? 'block' : 'none';
+          });
+          navs.forEach(n => n.classList.remove('active'));
+          nav.classList.add('active');
+          const titles = { caisse:'Caisse', recherche:'Recherche', pret:'Gestion de Prêt', grandeCaisse:'Grande Caisse', rapport:'Rapport & Comptabilité', parametres:'Paramètres' };
+          document.getElementById('pageTitle').innerText = titles[page];
+          if (page === 'rapport') refreshRapportTable();
+          if (page === 'caisse') { refreshCaisseHistory(); toggleBankInterface(); }
+          if (page === 'pret') { refreshCreditorSelects(); refreshStatement(); }
+          if (page === 'recherche') performSearch();
+          if (page === 'grandeCaisse') { loadGrandeCaisseReportForDate(); refreshGrandeCaisseHistory(); }
+          if (window.innerWidth <= 1000) {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('overlay').classList.remove('active');
+          }
+        });
+      });
+    }
+    
+    function toggleBankInterface() { 
+      const bank = document.getElementById('bankSelect').value; 
+      document.getElementById('standardInterface').style.display = bank === 'Unibank tt kote' ? 'none' : 'block'; 
+      document.getElementById('unibankInterface').style.display = bank === 'Unibank tt kote' ? 'block' : 'none'; 
+    }
     document.getElementById('bankSelect')?.addEventListener('change', toggleBankInterface);
     document.getElementById('unibankOperationType')?.addEventListener('change', function(){ document.getElementById('selectedOperationLabel').innerText = this.options[this.selectedIndex].text; });
     
+    // Connexion
     function handleLogin(){ 
       const u = document.getElementById('loginUsername').value.trim();
       const p = document.getElementById('loginPassword').value;
@@ -1533,7 +1553,7 @@
       document.getElementById('appContent').classList.remove('hidden');
       updateNavigationAccess();
       loadAllData();
-      initNavigation();
+      // Initialisation après chargement
       setAllDatesToToday();
       currentCaisseDate = getTodayDate();
       refreshCaisseHistory();
@@ -1548,12 +1568,15 @@
       startConnectionMonitoring();
       refreshCreditorSelects();
       refreshStatement();
+      initNavigation();
+      // Si utilisateur limité, on force la page Caisse
       if(currentUser.role === 'limited_caisse'){ 
         document.querySelector('.nav-item.active')?.classList.remove('active');
         document.getElementById('navCaisse').classList.add('active');
         document.getElementById('caisseSection').style.display = 'block';
         document.getElementById('pageTitle').innerText = 'Caisse';
       }
+      showNotification("Connexion réussie");
     }
     
     document.getElementById('doLoginBtn')?.addEventListener('click', handleLogin);
