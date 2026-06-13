@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -532,7 +533,6 @@
     function formatNumberInput(input) { let raw = parseNumber(input.value); input.value = formatNumber(raw); }
     function showNotification(msg, success=true) { const n = document.createElement('div'); n.className = 'toast-notification'; n.style.background = success ? '#059669' : '#dc2626'; n.innerText = msg; document.body.appendChild(n); setTimeout(() => n.remove(), 2500); }
     
-    // Impression sans popup (iframe)
     function printContent(htmlContent) {
       const iframe = document.createElement('iframe');
       iframe.style.position = 'absolute';
@@ -687,13 +687,13 @@
           <td>${t.cashier}</td>
           <td>${t.bank}</td>
           <td>${t.currency}</td>
-          <td>${getActionLabel(t)}</div></td>
-          <td>${formatNumber(t.amount)}</div></td>
-          <td>${t.quantity || 1}</div></td>
-          <td>${formatNumber(t.commissionG||0)} G</div></td>
-          <td>${formatNumber(t.commissionUSD||0)} USD</div></td>
-          <td>${t.bureau||'—'}</div></tr>
-        `;
+          <td>${getActionLabel(t)}</td>
+          <td>${formatNumber(t.amount)}</td>
+          <td>${t.quantity || 1}</td>
+          <td>${formatNumber(t.commissionG||0)} G</td>
+          <td>${formatNumber(t.commissionUSD||0)} USD</td>
+          <td>${t.bureau||'—'}</td>
+        </tr>`;
       });
     }
     
@@ -769,14 +769,14 @@
           <td>${t.cashier}</td>
           <td>${t.bank}</td>
           <td>${t.currency}</td>
-          <td>${getActionLabel(t)}</div></td>
-          <td>${formatNumber(t.amount)}</div></td>
-          <td>${t.quantity || 1}</div></td>
-          <td>${formatNumber(t.commissionG||0)} G</div></td>
-          <td>${formatNumber(t.commissionUSD||0)} USD</div></td>
-          <td>${t.bureau||'—'}</div></td>
-          <td><button class="btn btn-small btn-outline" onclick="editTransaction(${t.id})">Modifier</button></div></tr>
-        `;
+          <td>${getActionLabel(t)}</td>
+          <td>${formatNumber(t.amount)}</td>
+          <td>${t.quantity || 1}</td>
+          <td>${formatNumber(t.commissionG||0)} G</td>
+          <td>${formatNumber(t.commissionUSD||0)} USD</td>
+          <td>${t.bureau||'—'}</td>
+          <td><button class="btn btn-small btn-outline" onclick="editTransaction(${t.id})">Modifier</button></td>
+        </tr>`;
       });
       document.getElementById('searchSummary').style.display = 'block';
       document.getElementById('searchSummary').innerHTML = summaryHtml;
@@ -924,15 +924,17 @@
         if(e.type === 'loan') { balance += e.amount; html += `<tr>
           <td>${idx++}</td>
           <td>${e.date}</td>
-          <td>${formatNumber(e.amount)}</div></td>
-          <td>—</div></td>
-          <td>${formatNumber(balance)}</div></tr>`;
+          <td>${formatNumber(e.amount)}</td>
+          <td>—</td>
+          <td>${formatNumber(balance)}</td>
+        </tr>`;
         } else { balance -= e.amount; html += `<tr>
           <td>${idx++}</td>
-          <td>${e.date}</div></td>
-          <td>—</div></td>
-          <td>${formatNumber(e.amount)}</div></td>
-          <td>${formatNumber(balance)}</div></tr>`;
+          <td>${e.date}</td>
+          <td>—</td>
+          <td>${formatNumber(e.amount)}</td>
+          <td>${formatNumber(balance)}</td>
+        </tr>`;
         }
       }
       document.getElementById('statementTableBody').innerHTML = html;
@@ -994,7 +996,6 @@
       };
     }
     
-    // Impression fiche créancier
     function getCreditorPrintHtml() {
       const creditorId = parseInt(document.getElementById('creditorStatementSelect').value);
       if(!creditorId) { alert("Sélectionnez un créancier"); return null; }
@@ -1036,11 +1037,13 @@
         let balance = loan.amount - paid;
         html += `<tr>
           <td>${loan.date}</td>
-          <td class="amount">${formatNumber(loan.amount)}</div></td>
-          <td class="amount">${formatNumber(paid)}</div></td>
-          <td class="amount"><strong>${formatNumber(balance)}</strong></div></tr>`;
+          <td class="amount">${formatNumber(loan.amount)}</td>
+          <td class="amount">${formatNumber(paid)}</td>
+          <td class="amount"><strong>${formatNumber(balance)}</strong></td>
+        </tr>`;
       });
-      html += `</tbody></table>
+      html += `</tbody>
+        </table>
         <div class="signature-space">Signature du responsable : _________________________</div>
       </body></html>`;
       return html;
@@ -1262,10 +1265,10 @@
           <h2>FONDS DISPONIBLE</h2>
           <div class="row"><span>Montant Disponible début de journée :</span><span class="amount">${formatNumber(opening)} ${symbol}</span></div>
           <h3>📌 Détail des Montants Ajoutés</h3>
-          ${addedDetails.length ? `<table><thead><tr><th>Provenance</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${addedDetails.map(a => `<tr><td>${a.provenance || '—'}</td><td>${a.date || '—'}</td><td class="amount">${formatNumber(a.montant)}</div></tr>`).join('')}</tbody></table>` : '<div>Aucun montant ajouté.</div>'}
+          ${addedDetails.length ? `<table><thead><tr><th>Provenance</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${addedDetails.map(a => `<tr><td>${a.provenance || '—'}</td><td>${a.date || '—'}</td><td class="amount">${formatNumber(a.montant)}</td></tr>`).join('')}</tbody></table>` : '<div>Aucun montant ajouté.</div>'}
           <div class="row"><span>Total Montants Ajoutés :</span><span class="amount">${formatNumber(totalAdded)} ${symbol}</span></div>
           <h3>📌 Détail des Montants Expédiés</h3>
-          ${expeditedDetails.length ? `<table><thead><tr><th>Provenance</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${expeditedDetails.map(e => `<tr><td>${e.provenance || '—'}</td><td>${e.date || '—'}</td><td class="amount">${formatNumber(e.montant)}</div></tr>`).join('')}</tbody></table>` : '<div>Aucun montant expédié.</div>'}
+          ${expeditedDetails.length ? `<table><thead><tr><th>Provenance</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${expeditedDetails.map(e => `<tr><td>${e.provenance || '—'}</td><td>${e.date || '—'}</td><td class="amount">${formatNumber(e.montant)}</td></tr>`).join('')}</tbody></table>` : '<div>Aucun montant expédié.</div>'}
           <div class="row"><span>Total Montants Expédiés :</span><span class="amount">${formatNumber(totalExpedited)} ${symbol}</span></div>
           <div class="row total"><span>FONDS DISPONIBLES / JOURNÉE :</span><span class="amount highlight">${formatNumber(totalAvailable)} ${symbol}</span></div>
         </div>
@@ -1281,7 +1284,7 @@
           <div class="row total"><span>TOTAL PAIEMENT TRANSFERT :</span><span class="amount">${formatNumber(paymentsTotal)} ${symbol}</span></div>
           
           <h3>📌 Transfert de fonds</h3>
-          ${interDetails.length ? `<table><thead><tr><th>Destinataire</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${interDetails.map(i => `<tr><td>${i.provenance || i.caissier || '—'}</td><td>${i.date || '—'}</td><td class="amount">${formatNumber(i.montant)}</div></tr>`).join('')}</tbody></tr>` : '<div>Aucun transfert de fonds.</div>'}
+          ${interDetails.length ? `<table><thead><tr><th>Destinataire</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${interDetails.map(i => `<tr><td>${i.provenance || i.caissier || '—'}</td><td>${i.date || '—'}</td><td class="amount">${formatNumber(i.montant)}</td></tr>`).join('')}</tbody></table>` : '<div>Aucun transfert de fonds.</div>'}
           <div class="row total"><span>TOTAL TRANSFERT DE FONDS :</span><span class="amount">${formatNumber(totalInter)} ${symbol}</span></div>
           
           <h3>📌 Autres Décaissements</h3>
@@ -1296,7 +1299,7 @@
         
         <div class="section">
           <h2>DÉCOMPTES PHYSIQUES</h2>
-          ${physicalDetails.length ? `<table><thead><tr><th>Caissier</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${physicalDetails.map(p => `<tr><td>${p.nom || '—'}</td><td>${p.date || '—'}</td><td class="amount">${formatNumber(p.montant)}</div></tr>`).join('')}</tbody></table>` : '<div>Aucun décompte physique.</div>'}
+          ${physicalDetails.length ? `<table><thead><tr><th>Caissier</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${physicalDetails.map(p => `<tr><td>${p.nom || '—'}</td><td>${p.date || '—'}</td><td class="amount">${formatNumber(p.montant)}</td></tr>`).join('')}</tbody></table>` : '<div>Aucun décompte physique.</div>'}
           <div class="row total"><span>TOTAL DÉCOMPTES PHYSIQUES :</span><span class="amount">${formatNumber(report.totalPhysical || 0)} ${symbol}</span></div>
         </div>
         
@@ -1329,6 +1332,7 @@
       downloadGrandeCaisseReport(report);
     }
     
+    // ---------- MISE À JOUR HISTORIQUE AVEC FONDS FERMETURE = FONDS DISPO - TOTAL SORTIES ----------
     function refreshGrandeCaisseHistory() {
       const container = document.getElementById('grandeCaisseHistory');
       if (!container) return;
@@ -1343,15 +1347,19 @@
         return;
       }
       const symbol = r.currency === "Gourde" ? "G" : "USD";
+      
+      // Calculs fiables : Fonds disponible et total sortie (sans décomptes physiques)
+      let totalAvailable = (r.totalAvailable !== undefined) ? r.totalAvailable : ((r.openingBalance||0) + (r.totalAdded||0) + (r.totalExpedited||0));
+      let totalOutflow = (r.totalOutflow !== undefined) ? r.totalOutflow : ((r.payments||0) + (r.totalInter||0) + (r.totalOther||0));
+      let fondsFermeture = totalAvailable - totalOutflow;    // CORRECTION : FONDS DISPONIBLE - TOTAL SORTIE DE FONDS
+      
+      // données supplémentaires pour affichage détaillé
       let opening = r.openingBalance || 0;
       let totalAdded = r.totalAdded || 0;
       let totalExpedited = r.totalExpedited || 0;
-      let totalAvailable = r.totalAvailable || (opening + totalAdded + totalExpedited);
       let payments = r.payments || 0;
       let totalInter = r.totalInter || 0;
       let totalOther = r.totalOther || 0;
-      let totalOutflow = r.totalOutflow || (payments + totalInter + totalOther);
-      let fondsFermeture = (r.balanceFermeture !== undefined) ? r.balanceFermeture : ((totalAvailable - totalOutflow) - (r.totalPhysical || 0));
       
       const html = `
         <div class="history-report-card">
@@ -1359,19 +1367,20 @@
           <div class="history-section-block">
             <div class="ligne-rapport"><span>Montant Disponible debut /Journée</span><span>${formatNumber(opening)} ${symbol}</span></div>
             <div class="ligne-rapport"><span>Total Montant Ajoute de la Journée</span><span>${formatNumber(totalAdded)} ${symbol}</span></div>
-            <div class="ligne-rapport total"><span>FONDS DISPONIBLES/JOURNEE</span><span class="highlight-amount">${formatNumber(totalAvailable)} ${symbol}</span></div>
+            <div class="ligne-rapport"><span>Total Montant Expédié de la Journée</span><span>${formatNumber(totalExpedited)} ${symbol}</span></div>
+            <div class="ligne-rapport total"><span>FONDS DISPONIBLES / JOURNÉE</span><span class="highlight-amount">${formatNumber(totalAvailable)} ${symbol}</span></div>
           </div>
           <div class="history-section-block">
             <div class="ligne-rapport"><span>Paiement Transfer</span><span>${formatNumber(payments)} ${symbol}</span></div>
             <div class="ligne-rapport"><span>Transfer de fonds</span><span>${formatNumber(totalInter)} ${symbol}</span></div>
-            <div class="ligne-rapport"><span>Autres Decaisements</span><span>${formatNumber(totalOther)} ${symbol}</span></div>
+            <div class="ligne-rapport"><span>Autres Decaissements</span><span>${formatNumber(totalOther)} ${symbol}</span></div>
             <div class="ligne-rapport total"><span>TOTAL - SORTIE DE FONDS</span><span class="highlight-amount">${formatNumber(totalOutflow)} ${symbol}</span></div>
           </div>
           <div class="history-section-block">
             <div class="ligne-rapport total"><span>FONDS DE FERMETURE</span><span class="highlight-amount">${formatNumber(fondsFermeture)} ${symbol}</span></div>
           </div>
           <div class="justificatif" style="margin-top:12px; font-size:0.85rem; font-style:italic; background:#f9f9f9; padding:8px; border-radius:12px;">
-            <strong>Justificatif :</strong> FONDS DISPONIBLE = TOTAL SORTIE DE FONDS + BALANCE DE FERMETURE
+            <strong>Justificatif :</strong> FONDS DISPONIBLE = TOTAL SORTIE DE FONDS + FONDS DE FERMETURE
           </div>
           <div style="margin-top:10px; text-align:right;">
             <button class="btn btn-outline btn-small print-history-item" data-date="${r.date}">Imprimer ce rapport</button>
@@ -1539,7 +1548,6 @@
       document.getElementById('loginOverlay').style.display = 'none';
       document.getElementById('appContent').classList.remove('hidden');
       loadAllData();
-      // Réinitialisation de l'interface
       setAllDatesToToday();
       currentCaisseDate = getTodayDate();
       refreshCaisseHistory();
@@ -1555,7 +1563,6 @@
       refreshCreditorSelects();
       refreshStatement();
       initNavigation();
-      // Par défaut afficher la caisse
       document.querySelectorAll('.page-section').forEach(sec => sec.style.display = 'none');
       document.getElementById('caisseSection').style.display = 'block';
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1607,4 +1614,4 @@
     }
   </script>
 </body>
-</html>
+  </html>
