@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -481,9 +480,23 @@
           <div class="form-card"><h3>HISTORIQUE DES RAPPORTS DE FONDS DE LA JOURNEE</h3><div id="grandeCaisseHistory" class="historique-list"></div></div>
         </div>
 
-        <!-- RAPPORT & COMPTABILITÉ -->
+        <!-- RAPPORT & COMPTABILITÉ (modifié avec filtre bureau) -->
         <div id="rapportSection" class="page-section" style="display:none;">
-          <div class="form-card"><h3>RAPPORT DE PÉRIODE</h3><div class="filter-row"><div class="form-group"><label>Date début</label><input type="date" id="reportStart" value=""></div><div class="form-group"><label>Date fin</label><input type="date" id="reportEnd" value=""></div><button class="btn btn-primary" id="applyFilterBtn">Filtrer</button><button class="btn btn-outline" id="exportReportBtn">Exporter</button></div></div>
+          <div class="form-card"><h3>RAPPORT DE PÉRIODE</h3>
+            <div class="filter-row" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+              <div class="form-group"><label>Date début</label><input type="date" id="reportStart" value=""></div>
+              <div class="form-group"><label>Date fin</label><input type="date" id="reportEnd" value=""></div>
+              <div class="form-group"><label>Bureau</label>
+                <select id="reportBureauFilter">
+                  <option value="">Tous</option>
+                  <option value="Bureau central">Bureau central</option>
+                  <option value="Bureau 4 chemins">Bureau 4 chemins</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" id="applyFilterBtn">Filtrer</button>
+              <button class="btn btn-outline" id="exportReportBtn">Exporter</button>
+            </div>
+          </div>
           <div class="form-card"><h3>DÉTAIL DES TRANSACTIONS</h3><div class="table-container"><table class="report-table"><thead><tr><th>Date</th><th>Caissier</th><th>Maison</th><th>Devise</th><th>Type</th><th>Montant</th><th>Quantité</th><th>Commission (G)</th><th>Commission (USD)</th><th>Bureau</th></tr></thead><tbody id="allTransactionsTable"></tbody></table></div></div>
         </div>
 
@@ -533,32 +546,44 @@
     function formatNumberInput(input) { let raw = parseNumber(input.value); input.value = formatNumber(raw); }
     function showNotification(msg, success=true) { const n = document.createElement('div'); n.className = 'toast-notification'; n.style.background = success ? '#059669' : '#dc2626'; n.innerText = msg; document.body.appendChild(n); setTimeout(() => n.remove(), 2500); }
     
+    // ==================== FONCTIONS D'IMPRESSION ET TÉLÉCHARGEMENT ====================
     function printContent(htmlContent) {
-      const iframe = document.createElement('iframe');
-      iframe.style.position = 'absolute';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
-      iframe.style.border = 'none';
-      document.body.appendChild(iframe);
-      const iframeDoc = iframe.contentWindow.document;
-      iframeDoc.open();
-      iframeDoc.write(htmlContent);
-      iframeDoc.close();
-      iframe.onload = function() {
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-        setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 1000);
-      };
-      setTimeout(() => {
-        if (iframe.contentWindow) {
+      const win = window.open('', '_blank', 'width=800,height=600');
+      if (!win) {
+        // Fallback: if popup blocked, use iframe
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = 'none';
+        document.body.appendChild(iframe);
+        const iframeDoc = iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(htmlContent);
+        iframeDoc.close();
+        iframe.onload = function() {
           iframe.contentWindow.focus();
           iframe.contentWindow.print();
           setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 1000);
-        }
-      }, 500);
+        };
+        setTimeout(() => {
+          if (iframe.contentWindow) {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+            setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 1000);
+          }
+        }, 500);
+        return;
+      }
+      win.document.write(htmlContent);
+      win.document.close();
+      win.focus();
+      win.print();
+      setTimeout(() => { try { win.close(); } catch(e) {} }, 5000);
     }
+    
     function downloadHtml(content, filename) {
-      const blob = new Blob([content], { type: 'text/html' });
+      const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = filename;
@@ -678,26 +703,37 @@
       }); 
       c.innerHTML=html; 
     }
-    function refreshRapportTable(start=null,end=null){
-      let filtered=[...transactions]; if(start&&end) filtered=transactions.filter(t=>t.date>=start&&t.date<=end);
-      const tbody=document.getElementById('allTransactionsTable'); tbody.innerHTML='';
-      filtered.forEach(t=>{
-        tbody.innerHTML+=`<tr>
+    
+    // ==================== RAPPORT (avec filtre bureau) ====================
+    function refreshRapportTable(start=null, end=null, bureau=null) {
+      if (start === null) start = document.getElementById('reportStart').value;
+      if (end === null) end = document.getElementById('reportEnd').value;
+      if (bureau === null) bureau = document.getElementById('reportBureauFilter').value;
+      
+      let filtered = [...transactions];
+      if (start) filtered = filtered.filter(t => t.date >= start);
+      if (end) filtered = filtered.filter(t => t.date <= end);
+      if (bureau) filtered = filtered.filter(t => t.bureau === bureau);
+      
+      const tbody = document.getElementById('allTransactionsTable');
+      tbody.innerHTML = '';
+      filtered.forEach(t => {
+        tbody.innerHTML += `<tr>
           <td>${t.date}</td>
           <td>${t.cashier}</td>
           <td>${t.bank}</td>
           <td>${t.currency}</td>
-          <td>${getActionLabel(t)}</div></td>
-          <td>${formatNumber(t.amount)}</div></td>
-          <td>${t.quantity || 1}</div></td>
-          <td>${formatNumber(t.commissionG||0)} G</div></td>
-          <td>${formatNumber(t.commissionUSD||0)} USD</div></td>
-          <td>${t.bureau||'—'}</div></tr>
-        `;
+          <td>${getActionLabel(t)}</td>
+          <td>${formatNumber(t.amount)}</td>
+          <td>${t.quantity || 1}</td>
+          <td>${formatNumber(t.commissionG||0)} G</td>
+          <td>${formatNumber(t.commissionUSD||0)} USD</td>
+          <td>${t.bureau||'—'}</td>
+        </tr>`;
       });
     }
     
-    // ==================== RECHERCHE (inchangé) ====================
+    // ==================== RECHERCHE (suppression du total général des commissions) ====================
     function performSearch() {
       const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
       const startDate = document.getElementById('searchStartDate').value;
@@ -711,39 +747,67 @@
       
       const unibankTrans = results.filter(t => t.bank === 'Unibank tt kote');
       const otherTransfers = results.filter(t => t.bank !== 'Unibank tt kote');
-      let otherIncoming = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
-      let otherOutgoing = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
+      
+      let otherOutgoing = { Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } };
+      let otherIncoming = { Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } };
       otherTransfers.forEach(t => {
-        const isIncoming = (t.action === 'transfert_paye');
-        const isOutgoing = (t.action === 'transfert_expedie');
+        const isPaye = (t.action === 'transfert_paye');
+        const isExpedie = (t.action === 'transfert_expedie');
         const qty = t.quantity || 1;
         const amount = t.amount || 0;
         const currency = t.currency === 'Gourde' ? 'Gourde' : 'USD';
-        if (isIncoming) { otherIncoming[currency].qty += qty; otherIncoming[currency].amount += amount; }
-        else if (isOutgoing) { otherOutgoing[currency].qty += qty; otherOutgoing[currency].amount += amount; }
+        const commG = t.commissionG || 0;
+        const commUSD = t.commissionUSD || 0;
+        if (isPaye) {
+          otherOutgoing[currency].qty += qty;
+          otherOutgoing[currency].amount += amount;
+          otherOutgoing[currency].commG += commG;
+          otherOutgoing[currency].commUSD += commUSD;
+        } else if (isExpedie) {
+          otherIncoming[currency].qty += qty;
+          otherIncoming[currency].amount += amount;
+          otherIncoming[currency].commG += commG;
+          otherIncoming[currency].commUSD += commUSD;
+        }
       });
-      let unibankIncoming = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
-      let unibankOutgoing = { Gourde: { qty: 0, amount: 0 }, USD: { qty: 0, amount: 0 } };
+      
+      let unibankIncoming = { Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } };
+      let unibankOutgoing = { Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } };
       unibankTrans.forEach(t => {
         const isIncoming = (t.action === 'depot' || t.action === 'ouverture_compte' || t.action === 'souscription');
         const isOutgoing = (t.action === 'retrait');
         const qty = t.quantity || 1;
         const amount = t.amount || 0;
         const currency = t.currency === 'Gourde' ? 'Gourde' : 'USD';
-        if (isIncoming) { unibankIncoming[currency].qty += qty; unibankIncoming[currency].amount += amount; }
-        else if (isOutgoing) { unibankOutgoing[currency].qty += qty; unibankOutgoing[currency].amount += amount; }
+        const commG = t.commissionG || 0;
+        const commUSD = t.commissionUSD || 0;
+        if (isIncoming) {
+          unibankIncoming[currency].qty += qty;
+          unibankIncoming[currency].amount += amount;
+          unibankIncoming[currency].commG += commG;
+          unibankIncoming[currency].commUSD += commUSD;
+        } else if (isOutgoing) {
+          unibankOutgoing[currency].qty += qty;
+          unibankOutgoing[currency].amount += amount;
+          unibankOutgoing[currency].commG += commG;
+          unibankOutgoing[currency].commUSD += commUSD;
+        }
       });
+      
       const summaryHtml = `
         <div><strong>${results.length} transaction(s) trouvée(s)</strong></div>
         <div class="stats-summary-row">
           <div class="stats-summary-col">
             <h4>🏢 Autres maisons de transfert</h4>
-            <p><strong>Transferts Payés (entrées) :</strong><br>
-            Gourde : Qté = ${otherIncoming.Gourde.qty} | Montant = ${formatNumber(otherIncoming.Gourde.amount)} G<br>
-            USD : Qté = ${otherIncoming.USD.qty} | Montant = ${formatNumber(otherIncoming.USD.amount)} USD</p>
-            <p><strong>Transferts Expédiés (sorties) :</strong><br>
+            <p><strong>Transferts Payés (Sorties) :</strong><br>
             Gourde : Qté = ${otherOutgoing.Gourde.qty} | Montant = ${formatNumber(otherOutgoing.Gourde.amount)} G<br>
             USD : Qté = ${otherOutgoing.USD.qty} | Montant = ${formatNumber(otherOutgoing.USD.amount)} USD</p>
+            <p><strong>Transferts Expédiés (Entrées) :</strong><br>
+            Gourde : Qté = ${otherIncoming.Gourde.qty} | Montant = ${formatNumber(otherIncoming.Gourde.amount)} G<br>
+            USD : Qté = ${otherIncoming.USD.qty} | Montant = ${formatNumber(otherIncoming.USD.amount)} USD</p>
+            <p><strong>Commissions Autres :</strong><br>
+            Total Gourde = ${formatNumber(otherOutgoing.Gourde.commG + otherIncoming.Gourde.commG)} G<br>
+            Total USD = ${formatNumber(otherOutgoing.USD.commUSD + otherIncoming.USD.commUSD)} USD</p>
           </div>
           <div class="stats-summary-col">
             <h4>🏦 Unibank tt kote</h4>
@@ -753,9 +817,13 @@
             <p><strong>Retraits (sorties) :</strong><br>
             Gourde : Qté = ${unibankOutgoing.Gourde.qty} | Montant = ${formatNumber(unibankOutgoing.Gourde.amount)} G<br>
             USD : Qté = ${unibankOutgoing.USD.qty} | Montant = ${formatNumber(unibankOutgoing.USD.amount)} USD</p>
+            <p><strong>Commissions Unibank :</strong><br>
+            Total Gourde = ${formatNumber(unibankIncoming.Gourde.commG + unibankOutgoing.Gourde.commG)} G<br>
+            Total USD = ${formatNumber(unibankIncoming.USD.commUSD + unibankOutgoing.USD.commUSD)} USD</p>
           </div>
         </div>
       `;
+      
       const allBody = document.getElementById('allTransfersBody');
       allBody.innerHTML = '';
       if (results.length === 0) {
@@ -768,15 +836,15 @@
           <td>${t.date}</td>
           <td>${t.cashier}</td>
           <td>${t.bank}</td>
-          <td>${t.currency}</div></td>
-          <td>${getActionLabel(t)}</div></td>
-          <td>${formatNumber(t.amount)}</div></td>
-          <td>${t.quantity || 1}</div></td>
-          <td>${formatNumber(t.commissionG||0)} G</div></td>
-          <td>${formatNumber(t.commissionUSD||0)} USD</div></td>
-          <td>${t.bureau||'—'}</div></div></td>
-          <td><button class="btn btn-small btn-outline" onclick="editTransaction(${t.id})">Modifier</button></div></tr>
-        `;
+          <td>${t.currency}</td>
+          <td>${getActionLabel(t)}</td>
+          <td>${formatNumber(t.amount)}</td>
+          <td>${t.quantity || 1}</td>
+          <td>${formatNumber(t.commissionG||0)} G</td>
+          <td>${formatNumber(t.commissionUSD||0)} USD</td>
+          <td>${t.bureau||'—'}</td>
+          <td><button class="btn btn-small btn-outline" onclick="editTransaction(${t.id})">Modifier</button></td>
+        </tr>`;
       });
       document.getElementById('searchSummary').style.display = 'block';
       document.getElementById('searchSummary').innerHTML = summaryHtml;
@@ -922,18 +990,19 @@
       let balance = 0, idx = 1, html = '';
       for(let e of entries) {
         if(e.type === 'loan') { balance += e.amount; html += `<tr>
-          <td>${idx++}</div></td>
-          <td>${e.date}</div></td>
-          <td>${formatNumber(e.amount)}</div></div></td>
-          <td>—</div></div></td>
-          <td>${formatNumber(balance)}</div></td>
+          <td>${idx++}</td>
+          <td>${e.date}</td>
+          <td>${formatNumber(e.amount)}</td>
+          <td>—</td>
+          <td>${formatNumber(balance)}</td>
         </tr>`;
-        } else { balance -= e.amount; html += `<table>
-          <td>${idx++}</div></div></td>
-          <td>${e.date}</div></div></td>
-          <td>—</div></div></div></td>
-          <td>${formatNumber(e.amount)}</div></div></td>
-          <td>${formatNumber(balance)}</div></div></tr>`;
+        } else { balance -= e.amount; html += `<tr>
+          <td>${idx++}</td>
+          <td>${e.date}</td>
+          <td>—</td>
+          <td>${formatNumber(e.amount)}</td>
+          <td>${formatNumber(balance)}</td>
+        </tr>`;
         }
       }
       document.getElementById('statementTableBody').innerHTML = html;
@@ -1035,10 +1104,11 @@
         let paid = payments.reduce((s,p)=>s+p.amount,0);
         let balance = loan.amount - paid;
         html += `<tr>
-          <td>${loan.date}</div></td>
-          <td class="amount">${formatNumber(loan.amount)}</div></div></td>
-          <td class="amount">${formatNumber(paid)}</div></div></td>
-          <td class="amount"><strong>${formatNumber(balance)}</strong></div></div></tr>`;
+          <td>${loan.date}</td>
+          <td class="amount">${formatNumber(loan.amount)}</td>
+          <td class="amount">${formatNumber(paid)}</td>
+          <td class="amount"><strong>${formatNumber(balance)}</strong></td>
+        </tr>`;
       });
       html += `</tbody>
         </table>
@@ -1221,6 +1291,7 @@
       renderAddedFunds(); renderExpeditedFunds(); renderInterTransfers(); renderPhysicalCashiers(); updateGrandeCaisseCalculations(); 
     }
     
+    // ==================== RAPPORT GRANDE CAISSE - IMPRESSION / TÉLÉCHARGEMENT (MISE À JOUR) ====================
     function getGrandeCaissePrintHtml(report) {
       const symbol = report.currency === "Gourde" ? "G" : "USD";
       let opening = report.openingBalance || 0;
@@ -1238,23 +1309,49 @@
       const interDetails = report.interTransfersList || [];
       const physicalDetails = report.physicalCashiersList || [];
       
-      let html = `<html><head><title>Rapport Grande Caisse - ${report.date}</title>
-      <style>
-        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
-        h1 { color: #1e4a6b; border-bottom: 2px solid #1e4a6b; padding-bottom: 8px; }
-        h2 { color: #2c7da0; margin-top: 25px; font-size: 1.3rem; border-left: 4px solid #1e4a6b; padding-left: 10px; }
-        h3 { color: #333; margin-top: 20px; font-size: 1.1rem; }
-        .section { margin-bottom: 25px; background: #f9fafb; padding: 15px; border-radius: 8px; }
-        .row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .total { font-weight: bold; margin-top: 10px; padding-top: 8px; border-top: 2px solid #1e4a6b; }
-        .highlight { background: #fef9c3; padding: 4px 8px; border-radius: 8px; display: inline-block; }
-        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #eef2f9; }
-        td.amount { text-align: right; font-family: monospace; }
-        .signature-space { margin-top: 40px; border-top: 1px solid #000; padding-top: 15px; text-align: center; }
-        @media print { body { margin: 0; padding: 15px; } }
-      </style>
+      let html = `<html><head>
+        <meta charset="UTF-8">
+        <title>Rapport Grande Caisse - ${report.date}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; padding-bottom: 80px; }
+          h1 { color: #1e4a6b; border-bottom: 2px solid #1e4a6b; padding-bottom: 8px; }
+          h2 { color: #2c7da0; margin-top: 25px; font-size: 1.3rem; border-left: 4px solid #1e4a6b; padding-left: 10px; }
+          h3 { color: #333; margin-top: 20px; font-size: 1.1rem; }
+          .section { margin-bottom: 25px; background: #f9fafb; padding: 15px; border-radius: 8px; page-break-inside: avoid; }
+          .row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+          .total { font-weight: bold; margin-top: 10px; padding-top: 8px; border-top: 2px solid #1e4a6b; }
+          .highlight { background: #fef9c3; padding: 4px 8px; border-radius: 8px; display: inline-block; }
+          table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+          th { background: #eef2f9; }
+          td.amount { text-align: right; font-family: monospace; }
+          .signature-space {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px 20px;
+            border-top: 2px solid #000;
+            text-align: center;
+            font-size: 1.1rem;
+            margin: 0;
+          }
+          @media print {
+            body { margin: 0; padding: 15px; padding-bottom: 80px; }
+            .signature-space {
+              position: fixed;
+              bottom: 0;
+              left: 0;
+              right: 0;
+              background: white;
+              padding: 10px 20px;
+              border-top: 2px solid #000;
+              text-align: center;
+            }
+            .section { page-break-inside: avoid; }
+          }
+        </style>
       </head><body>
         <h1>Rapport Grande Caisse</h1>
         <p><strong>Date :</strong> ${report.date} &nbsp; | &nbsp; <strong>Bureau :</strong> ${report.bureau} &nbsp; | &nbsp; <strong>Devise :</strong> ${symbol}</p>
@@ -1262,18 +1359,18 @@
         <div class="section">
           <h2>FONDS DISPONIBLE</h2>
           <div class="row"><span>Montant Disponible début de journée :</span><span class="amount">${formatNumber(opening)} ${symbol}</span></div>
-          <h3>📌 Détail des Montants Ajoutés</h3>
-          ${addedDetails.length ? `<table><thead><tr><th>Provenance</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${addedDetails.map(a => `<tr><td>${a.provenance || '—'}</td><td>${a.date || '—'}</td><td class="amount">${formatNumber(a.montant)}</div></tr>`).join('')}</tbody></table>` : '<div>Aucun montant ajouté.</div>'}
+          <h3>Détail des Montants Ajoutés</h3>
+          ${addedDetails.length ? `<table><thead><tr><th>Provenance</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${addedDetails.map(a => `<tr><td>${a.provenance || '—'}</td><td>${a.date || '—'}</td><td class="amount">${formatNumber(a.montant)}</td></tr>`).join('')}</tbody></table>` : '<div>Aucun montant ajouté.</div>'}
           <div class="row"><span>Total Montants Ajoutés :</span><span class="amount">${formatNumber(totalAdded)} ${symbol}</span></div>
-          <h3>📌 Détail des Montants Expédiés</h3>
-          ${expeditedDetails.length ? `<table><thead><tr><th>Provenance</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${expeditedDetails.map(e => `<tr><td>${e.provenance || '—'}</td><td>${e.date || '—'}</td><td class="amount">${formatNumber(e.montant)}</div></tr>`).join('')}</tbody></table>` : '<div>Aucun montant expédié.</div>'}
+          <h3>Détail des Montants Expédiés</h3>
+          ${expeditedDetails.length ? `<table><thead><tr><th>Provenance</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${expeditedDetails.map(e => `<tr><td>${e.provenance || '—'}</td><td>${e.date || '—'}</td><td class="amount">${formatNumber(e.montant)}</td></tr>`).join('')}</tbody></table>` : '<div>Aucun montant expédié.</div>'}
           <div class="row"><span>Total Montants Expédiés :</span><span class="amount">${formatNumber(totalExpedited)} ${symbol}</span></div>
           <div class="row total"><span>FONDS DISPONIBLES / JOURNÉE :</span><span class="amount highlight">${formatNumber(totalAvailable)} ${symbol}</span></div>
         </div>
         
         <div class="section">
           <h2>SORTIES DE FONDS</h2>
-          <h3>📌 Paiement Transfert</h3>
+          <h3>Paiement Transfert</h3>
           <div class="row"><span>Unibank tt kote :</span><span class="amount">${formatNumber(report.unibank || 0)} ${symbol}</span></div>
           <div class="row"><span>Western Union :</span><span class="amount">${formatNumber(report.western || 0)} ${symbol}</span></div>
           <div class="row"><span>Unitransfert :</span><span class="amount">${formatNumber(report.unitransfert || 0)} ${symbol}</span></div>
@@ -1281,11 +1378,11 @@
           <div class="row"><span>Cam :</span><span class="amount">${formatNumber(report.cam || 0)} ${symbol}</span></div>
           <div class="row total"><span>TOTAL PAIEMENT TRANSFERT :</span><span class="amount">${formatNumber(paymentsTotal)} ${symbol}</span></div>
           
-          <h3>📌 Transfert de fonds</h3>
-          ${interDetails.length ? `<table><thead><tr><th>Destinataire</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${interDetails.map(i => `<tr><td>${i.provenance || i.caissier || '—'}</td><td>${i.date || '—'}</td><td class="amount">${formatNumber(i.montant)}</div></tr>`).join('')}</tbody></table>` : '<div>Aucun transfert de fonds.</div>'}
+          <h3>Transfert de fonds</h3>
+          ${interDetails.length ? `<table><thead><tr><th>Destinataire</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${interDetails.map(i => `<tr><td>${i.provenance || i.caissier || '—'}</td><td>${i.date || '—'}</td><td class="amount">${formatNumber(i.montant)}</td></tr>`).join('')}</tbody></table>` : '<div>Aucun transfert de fonds.</div>'}
           <div class="row total"><span>TOTAL TRANSFERT DE FONDS :</span><span class="amount">${formatNumber(totalInter)} ${symbol}</span></div>
           
-          <h3>📌 Autres Décaissements</h3>
+          <h3>Autres Décaissements</h3>
           <div class="row"><span>Acquisitions de biens/bureau :</span><span class="amount">${formatNumber(report.acquisitions || 0)} ${symbol}</span></div>
           <div class="row"><span>Paiements factures :</span><span class="amount">${formatNumber(report.bills || 0)} ${symbol}</span></div>
           <div class="row"><span>Autres décaissements :</span><span class="amount">${formatNumber(report.disbursements || 0)} ${symbol}</span></div>
@@ -1297,7 +1394,7 @@
         
         <div class="section">
           <h2>DÉCOMPTES PHYSIQUES</h2>
-          ${physicalDetails.length ? `<table><thead><tr><th>Caissier</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${physicalDetails.map(p => `<tr><td>${p.nom || '—'}</td><td>${p.date || '—'}</td><td class="amount">${formatNumber(p.montant)}</div></tr>`).join('')}</tbody></tr>` : '<div>Aucun décompte physique.</div>'}
+          ${physicalDetails.length ? `<table><thead><tr><th>Caissier</th><th>Date</th><th>Montant (${symbol})</th></tr></thead><tbody>${physicalDetails.map(p => `<tr><td>${p.nom || '—'}</td><td>${p.date || '—'}</td><td class="amount">${formatNumber(p.montant)}</td></tr>`).join('')}</tbody></table>` : '<div>Aucun décompte physique.</div>'}
           <div class="row total"><span>TOTAL DÉCOMPTES PHYSIQUES :</span><span class="amount">${formatNumber(report.totalPhysical || 0)} ${symbol}</span></div>
         </div>
         
@@ -1582,7 +1679,7 @@
     document.getElementById('logoutBtn')?.addEventListener('click', function() { window.location.href = 'index.html'; });
     document.getElementById('saveTransactionBtn')?.addEventListener('click', addStandardTransaction);
     document.getElementById('saveUnibankTransactionBtn')?.addEventListener('click', saveUnibankTransaction);
-    document.getElementById('applyFilterBtn')?.addEventListener('click', () => { const s = document.getElementById('reportStart').value, e = document.getElementById('reportEnd').value; refreshRapportTable(s, e); });
+    document.getElementById('applyFilterBtn')?.addEventListener('click', () => { refreshRapportTable(); });
     document.getElementById('exportBtn')?.addEventListener('click', () => { exportFullDataToJSON(); });
     document.getElementById('performSearchBtn')?.addEventListener('click', performSearch);
     document.getElementById('resetSearchBtn')?.addEventListener('click', () => { document.getElementById('searchKeyword').value = ''; document.getElementById('searchStartDate').value = ''; document.getElementById('searchEndDate').value = ''; document.getElementById('searchBureauFilter').value = ''; performSearch(); });
@@ -1609,4 +1706,4 @@
     }
   </script>
 </body>
-      </html>
+  </html>
