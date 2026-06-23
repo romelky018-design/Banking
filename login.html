@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -411,9 +412,43 @@
           <div class="form-card"><h3>Historique des transactions</h3><div class="date-nav"><button class="btn btn-outline btn-small" id="prevDayCaisse">◀ Jour précédent</button><span id="currentDateDisplay">Aujourd'hui</span><button class="btn btn-outline btn-small" id="nextDayCaisse">Jour suivant ▶</button><button class="btn btn-outline btn-small" id="resetDateCaisse">Aujourd'hui</button></div><div id="caisseHistory" class="historique-list"></div></div>
         </div>
 
-        <!-- RECHERCHE -->
+        <!-- RECHERCHE (mise à jour) -->
         <div id="rechercheSection" class="page-section" style="display:none;">
-          <div class="form-card"><h3>Recherche universelle</h3><div class="form-grid"><div class="form-group"><label>Mot-clé</label><input type="text" id="searchKeyword" placeholder="Nom, banque, téléphone..."></div><div class="form-group"><label>Date début</label><input type="date" id="searchStartDate" value=""></div><div class="form-group"><label>Date fin</label><input type="date" id="searchEndDate" value=""></div><div class="form-group"><label>BUREAU</label><select id="searchBureauFilter"><option value="">Tous</option><option value="Bureau central">Bureau central</option><option value="Bureau 4 chemins">Bureau 4 chemins</option></select></div></div><div style="display: flex; gap: 12px; flex-wrap: wrap;"><button class="btn btn-primary" id="performSearchBtn">Rechercher</button><button class="btn btn-outline" id="resetSearchBtn">Réinitialiser</button><button class="btn btn-outline" id="exportSearchResultsBtn">Exporter résultats</button></div></div>
+          <div class="form-card"><h3>Recherche universelle</h3>
+            <div class="form-grid">
+              <div class="form-group"><label>Mot-clé</label><input type="text" id="searchKeyword" placeholder="Nom, banque, téléphone..."></div>
+              <div class="form-group"><label>Date début</label><input type="date" id="searchStartDate" value=""></div>
+              <div class="form-group"><label>Date fin</label><input type="date" id="searchEndDate" value=""></div>
+              <div class="form-group"><label>BUREAU</label>
+                <select id="searchBureauFilter">
+                  <option value="">Tous</option>
+                  <option value="Bureau central">Bureau central</option>
+                  <option value="Bureau 4 chemins">Bureau 4 chemins</option>
+                </select>
+              </div>
+              <!-- NOUVEAU : Devise -->
+              <div class="form-group"><label>Devise</label>
+                <select id="searchDeviseFilter">
+                  <option value="">Tous</option>
+                  <option value="Gourde">Gourde</option>
+                  <option value="USD">USD</option>
+                </select>
+              </div>
+              <!-- NOUVEAU : Type de transfert -->
+              <div class="form-group"><label>Type de transfert</label>
+                <select id="searchTypeFilter">
+                  <option value="">Tous</option>
+                  <option value="transfert_expedie">Transfert expédié</option>
+                  <option value="transfert_paye">Transfert payé</option>
+                </select>
+              </div>
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="btn btn-primary" id="performSearchBtn">Rechercher</button>
+              <button class="btn btn-outline" id="resetSearchBtn">Réinitialiser</button>
+              <button class="btn btn-outline" id="exportSearchResultsBtn">Exporter résultats</button>
+            </div>
+          </div>
           <div class="form-card"><h3>RÉSULTATS DES TRANSACTIONS</h3>
             <div id="searchSummary" class="search-stats" style="display:none;"></div>
             <div id="searchResultsSplit" class="search-results-split" style="display:none;">
@@ -550,7 +585,6 @@
     function printContent(htmlContent) {
       const win = window.open('', '_blank', 'width=800,height=600');
       if (!win) {
-        // Fallback: if popup blocked, use iframe
         const iframe = document.createElement('iframe');
         iframe.style.position = 'absolute';
         iframe.style.width = '0';
@@ -733,17 +767,29 @@
       });
     }
     
-    // ==================== RECHERCHE (suppression du total général des commissions) ====================
+    // ==================== RECHERCHE (mise à jour avec nouveaux filtres) ====================
     function performSearch() {
       const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
       const startDate = document.getElementById('searchStartDate').value;
       const endDate = document.getElementById('searchEndDate').value;
       const bureauFilter = document.getElementById('searchBureauFilter').value;
+      const deviseFilter = document.getElementById('searchDeviseFilter').value;
+      const typeFilter = document.getElementById('searchTypeFilter').value;
+      
       let results = [...transactions];
+      
+      // Filtres
       if (startDate) results = results.filter(t => t.date >= startDate);
       if (endDate) results = results.filter(t => t.date <= endDate);
       if (bureauFilter) results = results.filter(t => t.bureau === bureauFilter);
-      if (keyword) results = results.filter(t => t.cashier.toLowerCase().includes(keyword) || t.bank.toLowerCase().includes(keyword) || (t.bureau && t.bureau.toLowerCase().includes(keyword)) || (t.currency && t.currency.toLowerCase().includes(keyword)));
+      if (deviseFilter) results = results.filter(t => t.currency === deviseFilter);
+      if (typeFilter) results = results.filter(t => t.action === typeFilter);
+      if (keyword) results = results.filter(t => 
+        t.cashier.toLowerCase().includes(keyword) || 
+        t.bank.toLowerCase().includes(keyword) || 
+        (t.bureau && t.bureau.toLowerCase().includes(keyword)) || 
+        (t.currency && t.currency.toLowerCase().includes(keyword))
+      );
       
       const unibankTrans = results.filter(t => t.bank === 'Unibank tt kote');
       const otherTransfers = results.filter(t => t.bank !== 'Unibank tt kote');
@@ -1291,7 +1337,7 @@
       renderAddedFunds(); renderExpeditedFunds(); renderInterTransfers(); renderPhysicalCashiers(); updateGrandeCaisseCalculations(); 
     }
     
-    // ==================== RAPPORT GRANDE CAISSE - IMPRESSION / TÉLÉCHARGEMENT (MISE À JOUR) ====================
+    // ==================== RAPPORT GRANDE CAISSE - IMPRESSION / TÉLÉCHARGEMENT ====================
     function getGrandeCaissePrintHtml(report) {
       const symbol = report.currency === "Gourde" ? "G" : "USD";
       let opening = report.openingBalance || 0;
@@ -1682,7 +1728,15 @@
     document.getElementById('applyFilterBtn')?.addEventListener('click', () => { refreshRapportTable(); });
     document.getElementById('exportBtn')?.addEventListener('click', () => { exportFullDataToJSON(); });
     document.getElementById('performSearchBtn')?.addEventListener('click', performSearch);
-    document.getElementById('resetSearchBtn')?.addEventListener('click', () => { document.getElementById('searchKeyword').value = ''; document.getElementById('searchStartDate').value = ''; document.getElementById('searchEndDate').value = ''; document.getElementById('searchBureauFilter').value = ''; performSearch(); });
+    document.getElementById('resetSearchBtn')?.addEventListener('click', () => {
+      document.getElementById('searchKeyword').value = '';
+      document.getElementById('searchStartDate').value = '';
+      document.getElementById('searchEndDate').value = '';
+      document.getElementById('searchBureauFilter').value = '';
+      document.getElementById('searchDeviseFilter').value = '';
+      document.getElementById('searchTypeFilter').value = '';
+      performSearch();
+    });
     document.getElementById('exportSearchResultsBtn')?.addEventListener('click', () => {
       const headers = ["Date","Caissier","Maison","Devise","Type","Montant","Quantité","Commission G","Commission USD","Bureau"];
       const rows = transactions.map(t => [t.date, t.cashier, t.bank, t.currency, getActionLabel(t), t.amount, t.quantity||1, t.commissionG||0, t.commissionUSD||0, t.bureau||'']);
