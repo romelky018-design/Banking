@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>ATS - Système de Gestion Financière</title>
   <style>
-    /* ========== STYLES COMPLETS (inchangés) ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --bg: #f5f7fc; --card: #ffffff; --text: #1a2c3e; --text-light: #5b6e8c;
@@ -412,7 +410,7 @@
           <div class="form-card"><h3>Historique des transactions</h3><div class="date-nav"><button class="btn btn-outline btn-small" id="prevDayCaisse">◀ Jour précédent</button><span id="currentDateDisplay">Aujourd'hui</span><button class="btn btn-outline btn-small" id="nextDayCaisse">Jour suivant ▶</button><button class="btn btn-outline btn-small" id="resetDateCaisse">Aujourd'hui</button></div><div id="caisseHistory" class="historique-list"></div></div>
         </div>
 
-        <!-- RECHERCHE (mise à jour) -->
+        <!-- RECHERCHE -->
         <div id="rechercheSection" class="page-section" style="display:none;">
           <div class="form-card"><h3>Recherche universelle</h3>
             <div class="form-grid">
@@ -426,7 +424,6 @@
                   <option value="Bureau 4 chemins">Bureau 4 chemins</option>
                 </select>
               </div>
-              <!-- NOUVEAU : Devise -->
               <div class="form-group"><label>Devise</label>
                 <select id="searchDeviseFilter">
                   <option value="">Tous</option>
@@ -434,7 +431,6 @@
                   <option value="USD">USD</option>
                 </select>
               </div>
-              <!-- NOUVEAU : Type de transfert -->
               <div class="form-group"><label>Type de transfert</label>
                 <select id="searchTypeFilter">
                   <option value="">Tous</option>
@@ -515,7 +511,7 @@
           <div class="form-card"><h3>HISTORIQUE DES RAPPORTS DE FONDS DE LA JOURNEE</h3><div id="grandeCaisseHistory" class="historique-list"></div></div>
         </div>
 
-        <!-- RAPPORT & COMPTABILITÉ (modifié avec filtre bureau) -->
+        <!-- RAPPORT & COMPTABILITÉ -->
         <div id="rapportSection" class="page-section" style="display:none;">
           <div class="form-card"><h3>RAPPORT DE PÉRIODE</h3>
             <div class="filter-row" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
@@ -639,7 +635,7 @@
     const VALID_USERS = { admin: { password: adminPassword, role: "admin" }, caisse: { password: caissePassword, role: "limited_caisse" } };
     function updateUserPasswords() { VALID_USERS.admin.password = adminPassword; VALID_USERS.caisse.password = caissePassword; }
     
-    function hasAccess(page) { if (!currentUser) return false; if (currentUser.role === 'admin') return true; return ['caisse', 'grandeCaisse'].includes(page); }
+    function hasAccess(page) { if (!currentUser) return false; if (currentUser.role === 'admin') return true; return ['caisse', 'pret', 'grandeCaisse'].includes(page); }
     
     function saveAllData() {
       const fullData = { transactions, creditors, creditorLoans, creditorPayments, dailyReports, interTransfers, physicalCashiers, addedFunds, expeditedFunds, adminPassword, caissePassword };
@@ -767,7 +763,7 @@
       });
     }
     
-    // ==================== RECHERCHE (mise à jour avec nouveaux filtres) ====================
+    // ==================== RECHERCHE (FIXED - NOW SUMS ALL commissionG AND commissionUSD SEPARATELY) ====================
     function performSearch() {
       const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
       const startDate = document.getElementById('searchStartDate').value;
@@ -778,7 +774,6 @@
       
       let results = [...transactions];
       
-      // Filtres
       if (startDate) results = results.filter(t => t.date >= startDate);
       if (endDate) results = results.filter(t => t.date <= endDate);
       if (bureauFilter) results = results.filter(t => t.bureau === bureauFilter);
@@ -794,16 +789,26 @@
       const unibankTrans = results.filter(t => t.bank === 'Unibank tt kote');
       const otherTransfers = results.filter(t => t.bank !== 'Unibank tt kote');
       
-      let otherOutgoing = { Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } };
-      let otherIncoming = { Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } };
+      // Initialize counters - separate by currency for amounts and by commission type
+      let otherOutgoing = { 
+        Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, 
+        USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } 
+      };
+      let otherIncoming = { 
+        Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, 
+        USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } 
+      };
+      
       otherTransfers.forEach(t => {
         const isPaye = (t.action === 'transfert_paye');
         const isExpedie = (t.action === 'transfert_expedie');
         const qty = t.quantity || 1;
         const amount = t.amount || 0;
         const currency = t.currency === 'Gourde' ? 'Gourde' : 'USD';
+        // Get BOTH commission values - commissionG and commissionUSD
         const commG = t.commissionG || 0;
         const commUSD = t.commissionUSD || 0;
+        
         if (isPaye) {
           otherOutgoing[currency].qty += qty;
           otherOutgoing[currency].amount += amount;
@@ -817,8 +822,16 @@
         }
       });
       
-      let unibankIncoming = { Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } };
-      let unibankOutgoing = { Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } };
+      // Initialize counters for Unibank
+      let unibankIncoming = { 
+        Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, 
+        USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } 
+      };
+      let unibankOutgoing = { 
+        Gourde: { qty: 0, amount: 0, commG: 0, commUSD: 0 }, 
+        USD: { qty: 0, amount: 0, commG: 0, commUSD: 0 } 
+      };
+      
       unibankTrans.forEach(t => {
         const isIncoming = (t.action === 'depot' || t.action === 'ouverture_compte' || t.action === 'souscription');
         const isOutgoing = (t.action === 'retrait');
@@ -827,6 +840,7 @@
         const currency = t.currency === 'Gourde' ? 'Gourde' : 'USD';
         const commG = t.commissionG || 0;
         const commUSD = t.commissionUSD || 0;
+        
         if (isIncoming) {
           unibankIncoming[currency].qty += qty;
           unibankIncoming[currency].amount += amount;
@@ -840,6 +854,13 @@
         }
       });
       
+      // Calculate totals - SEPARATE commissions by type (Gourde and USD)
+      let totalOtherCommG = otherOutgoing.Gourde.commG + otherIncoming.Gourde.commG + otherOutgoing.USD.commG + otherIncoming.USD.commG;
+      let totalOtherCommUSD = otherOutgoing.Gourde.commUSD + otherIncoming.Gourde.commUSD + otherOutgoing.USD.commUSD + otherIncoming.USD.commUSD;
+      
+      let totalUnibankCommG = unibankIncoming.Gourde.commG + unibankOutgoing.Gourde.commG + unibankIncoming.USD.commG + unibankOutgoing.USD.commG;
+      let totalUnibankCommUSD = unibankIncoming.Gourde.commUSD + unibankOutgoing.Gourde.commUSD + unibankIncoming.USD.commUSD + unibankOutgoing.USD.commUSD;
+      
       const summaryHtml = `
         <div><strong>${results.length} transaction(s) trouvée(s)</strong></div>
         <div class="stats-summary-row">
@@ -852,8 +873,8 @@
             Gourde : Qté = ${otherIncoming.Gourde.qty} | Montant = ${formatNumber(otherIncoming.Gourde.amount)} G<br>
             USD : Qté = ${otherIncoming.USD.qty} | Montant = ${formatNumber(otherIncoming.USD.amount)} USD</p>
             <p><strong>Commissions Autres :</strong><br>
-            Total Gourde = ${formatNumber(otherOutgoing.Gourde.commG + otherIncoming.Gourde.commG)} G<br>
-            Total USD = ${formatNumber(otherOutgoing.USD.commUSD + otherIncoming.USD.commUSD)} USD</p>
+            Total Gourde = ${formatNumber(totalOtherCommG)} G<br>
+            Total USD = ${formatNumber(totalOtherCommUSD)} USD</p>
           </div>
           <div class="stats-summary-col">
             <h4>🏦 Unibank tt kote</h4>
@@ -864,8 +885,8 @@
             Gourde : Qté = ${unibankOutgoing.Gourde.qty} | Montant = ${formatNumber(unibankOutgoing.Gourde.amount)} G<br>
             USD : Qté = ${unibankOutgoing.USD.qty} | Montant = ${formatNumber(unibankOutgoing.USD.amount)} USD</p>
             <p><strong>Commissions Unibank :</strong><br>
-            Total Gourde = ${formatNumber(unibankIncoming.Gourde.commG + unibankOutgoing.Gourde.commG)} G<br>
-            Total USD = ${formatNumber(unibankIncoming.USD.commUSD + unibankOutgoing.USD.commUSD)} USD</p>
+            Total Gourde = ${formatNumber(totalUnibankCommG)} G<br>
+            Total USD = ${formatNumber(totalUnibankCommUSD)} USD</p>
           </div>
         </div>
       `;
@@ -1706,16 +1727,31 @@
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       document.getElementById('navCaisse').classList.add('active');
       document.getElementById('pageTitle').innerText = 'Caisse';
+      
       if(currentUser.role === 'limited_caisse'){ 
         document.getElementById('navRecherche').style.display = 'none';
-        document.getElementById('navPret').style.display = 'none';
         document.getElementById('navRapport').style.display = 'none';
         document.getElementById('navParametres').style.display = 'none';
+        document.getElementById('navPret').style.display = 'flex';
+        document.getElementById('navGrandeCaisse').style.display = 'flex';
+        const navItems = document.querySelectorAll('.nav-item[data-page]');
+        navItems.forEach(item => {
+          if(item.getAttribute('data-page') === 'recherche') {
+            item.style.display = 'none';
+          }
+          if(item.getAttribute('data-page') === 'rapport') {
+            item.style.display = 'none';
+          }
+          if(item.getAttribute('data-page') === 'parametres') {
+            item.style.display = 'none';
+          }
+        });
       } else {
         document.getElementById('navRecherche').style.display = 'flex';
         document.getElementById('navPret').style.display = 'flex';
         document.getElementById('navRapport').style.display = 'flex';
         document.getElementById('navParametres').style.display = 'flex';
+        document.getElementById('navGrandeCaisse').style.display = 'flex';
       }
       showNotification("Connexion réussie");
     }
@@ -1760,4 +1796,4 @@
     }
   </script>
 </body>
-  </html>
+</html>
